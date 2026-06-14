@@ -107,7 +107,7 @@ export function RightMapControls({
                 }
               >
                 <Select.Trigger aria-label="Basemap" />
-                <Select.Content>
+                <Select.Content position="popper" side="top">
                   <Select.Item value="osm">OpenStreetMap</Select.Item>
                   <Select.Item value="custom-xyz">Custom XYZ</Select.Item>
                 </Select.Content>

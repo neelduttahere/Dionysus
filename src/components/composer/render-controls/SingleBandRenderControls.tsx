@@ -53,7 +53,7 @@ export function SingleBandRenderControls({
           onValueChange={onSelectedAssetChange}
         >
           <Select.Trigger aria-label="Band" />
-          <Select.Content>
+          <Select.Content position="popper" side="top">
             {assets.map((asset) => (
               <Select.Item key={asset.key} value={asset.key}>
                 {asset.label}

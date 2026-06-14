@@ -64,7 +64,7 @@ export function SettingsPanel({
           }
         >
           <Select.Trigger aria-label="Basemap" />
-          <Select.Content>
+          <Select.Content position="popper" side="top">
             <Select.Item value="osm">OpenStreetMap</Select.Item>
             <Select.Item value="custom-xyz">Custom XYZ</Select.Item>
           </Select.Content>
@@ -101,7 +101,7 @@ export function SettingsPanel({
           }
         >
           <Select.Trigger aria-label="Area unit" />
-          <Select.Content>
+          <Select.Content position="popper" side="top">
             <Select.Item value="km2">Square kilometers</Select.Item>
             <Select.Item value="m2">Square meters</Select.Item>
             <Select.Item value="hectare">Hectares</Select.Item>

@@ -312,7 +312,7 @@ function ComposerInstanceEditor({
                 onValueChange={(value) => updateRenderMode(value as RenderMode)}
               >
                 <Select.Trigger aria-label="Render mode" />
-                <Select.Content>
+                <Select.Content position="popper" side="top">
                   <Select.Item value="default">Default</Select.Item>
                   <Select.Item value="visual">Visual asset</Select.Item>
                   <Select.Item value="rgb">RGB composite</Select.Item>

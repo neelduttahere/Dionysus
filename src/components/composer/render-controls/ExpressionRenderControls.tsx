@@ -73,7 +73,7 @@ export function ExpressionRenderControls({
         </Flex>
         <Select.Root value={colormap || 'viridis'} onValueChange={onColormapChange}>
           <Select.Trigger aria-label="Colormap" />
-          <Select.Content>
+          <Select.Content position="popper" side="top">
             {TITILER_COLORMAPS.map((colormapName) => (
               <Select.Item key={colormapName} value={colormapName}>
                 {colormapName}
