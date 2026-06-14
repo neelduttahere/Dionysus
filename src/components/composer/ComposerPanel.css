@@ -90,6 +90,11 @@
   max-width: 100%;
 }
 
+.active-timeline-details {
+  padding-top: 8px;
+  border-top: 1px solid rgb(148 163 184 / 16%);
+}
+
 .timeline-details {
   display: grid;
   min-width: 240px;

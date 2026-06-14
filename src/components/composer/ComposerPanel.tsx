@@ -5,7 +5,6 @@ import {
   DataList,
   Flex,
   Heading,
-  HoverCard,
   ScrollArea,
   SegmentedControl,
   Select,
@@ -15,7 +14,7 @@ import {
   TextArea,
   TextField,
 } from '@radix-ui/themes'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { FieldLabelWithInfo } from '@/components/ui/FieldLabelWithInfo'
 import type {
   ComposerInstanceState,
@@ -155,8 +154,6 @@ function ComposerInstanceEditor({
 }: ComposerInstanceEditorProps) {
   const [draftUrls, setDraftUrls] = useState(instance.urls.join(', '))
   const [alert, setAlert] = useState<string | null>(null)
-  const [isTimelineScrolling, setIsTimelineScrolling] = useState(false)
-  const timelineScrollTimeout = useRef<number | null>(null)
   const activeIndex = Math.max(0, instance.urls.indexOf(instance.activeItemId ?? ''))
   const activeItem =
     timelineItems.find((item) => item.url === instance.activeItemId) ??
@@ -164,14 +161,6 @@ function ComposerInstanceEditor({
     null
   const activeConfig = getActiveRenderConfig(instance, activeItem)
   const singleBandAssets = getSingleBandAssetOptions(activeItem)
-
-  useEffect(() => {
-    return () => {
-      if (timelineScrollTimeout.current !== null) {
-        window.clearTimeout(timelineScrollTimeout.current)
-      }
-    }
-  }, [])
 
   async function loadUrls() {
     const urls = parseCommaSeparatedUrls(draftUrls)
@@ -217,18 +206,6 @@ function ComposerInstanceEditor({
           ? [activeConfig.assetKeys[0] ?? firstSingleBandAsset ?? '']
           : activeConfig.assetKeys,
     })
-  }
-
-  function handleTimelineScroll() {
-    setIsTimelineScrolling(true)
-
-    if (timelineScrollTimeout.current !== null) {
-      window.clearTimeout(timelineScrollTimeout.current)
-    }
-
-    timelineScrollTimeout.current = window.setTimeout(() => {
-      setIsTimelineScrolling(false)
-    }, 180)
   }
 
   return (
@@ -289,7 +266,6 @@ function ComposerInstanceEditor({
                   className="timeline-scroll-area"
                   scrollbars="horizontal"
                   type="hover"
-                  onScrollCapture={handleTimelineScroll}
                 >
                   <div className="timeline-scroll-content">
                     <SegmentedControl.Root
@@ -299,16 +275,9 @@ function ComposerInstanceEditor({
                     >
                       {timelineItems.map((item, index) => (
                         <SegmentedControl.Item key={item.url} value={item.url}>
-                          <HoverCard.Root open={isTimelineScrolling ? false : undefined}>
-                            <HoverCard.Trigger>
-                              <span className="timeline-segment-label">
-                                {formatTimelineDate(item.datetime, index)}
-                              </span>
-                            </HoverCard.Trigger>
-                            <HoverCard.Content width="340px">
-                              <TimelineItemDetails item={item} areaUnit={areaUnit} />
-                            </HoverCard.Content>
-                          </HoverCard.Root>
+                          <span className="timeline-segment-label">
+                            {formatTimelineDate(item.datetime, index)}
+                          </span>
                         </SegmentedControl.Item>
                       ))}
                     </SegmentedControl.Root>
@@ -324,6 +293,11 @@ function ComposerInstanceEditor({
             <Text as="p" size="1" color="gray" className="active-url">
               {instance.activeItemId}
             </Text>
+            {activeItem ? (
+              <div className="active-timeline-details">
+                <TimelineItemDetails item={activeItem} areaUnit={areaUnit} />
+              </div>
+            ) : null}
           </div>
 
           <Separator size="4" />
