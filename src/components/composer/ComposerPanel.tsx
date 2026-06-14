@@ -32,6 +32,7 @@ interface ComposerPanelProps {
   onModeChange: (mode: ComposerState['mode']) => void
   onLoadSingleUrls: (urls: string[]) => Promise<void>
   onLoadSideUrls: (side: 'left' | 'right', urls: string[]) => Promise<void>
+  onTimelineItemSelect: (item: ParsedStacItem) => void
   onSingleChange: (instance: ComposerInstanceState) => void
   onSideChange: (side: 'left' | 'right', instance: ComposerInstanceState) => void
   loadingSide: 'single' | 'left' | 'right' | null
@@ -47,6 +48,7 @@ export function ComposerPanel({
   onModeChange,
   onLoadSingleUrls,
   onLoadSideUrls,
+  onTimelineItemSelect,
   onSingleChange,
   onSideChange,
   loadingSide,
@@ -86,6 +88,7 @@ export function ComposerPanel({
           isLoading={loadingSide === 'single'}
           loadError={loadError}
           onLoadUrls={onLoadSingleUrls}
+          onTimelineItemSelect={onTimelineItemSelect}
           onChange={onSingleChange}
         />
       ) : (
@@ -105,6 +108,7 @@ export function ComposerPanel({
             isLoading={loadingSide === activeSide}
             loadError={loadError}
             onLoadUrls={(urls) => onLoadSideUrls(activeSide, urls)}
+            onTimelineItemSelect={onTimelineItemSelect}
             onChange={(instance) => onSideChange(activeSide, instance)}
           />
         </>
@@ -121,6 +125,7 @@ interface ComposerInstanceEditorProps {
   isLoading: boolean
   loadError: string | null
   onLoadUrls: (urls: string[]) => Promise<void>
+  onTimelineItemSelect: (item: ParsedStacItem) => void
   onChange: (instance: ComposerInstanceState) => void
 }
 
@@ -132,6 +137,7 @@ function ComposerInstanceEditor({
   isLoading,
   loadError,
   onLoadUrls,
+  onTimelineItemSelect,
   onChange,
 }: ComposerInstanceEditorProps) {
   const [draftUrls, setDraftUrls] = useState(instance.urls.join(', '))
@@ -156,10 +162,16 @@ function ComposerInstanceEditor({
   }
 
   function selectTimelineItem(url: string) {
+    const selectedItem = timelineItems.find((item) => item.url === url)
+
     onChange({
       ...instance,
       activeItemId: url,
     })
+
+    if (selectedItem) {
+      onTimelineItemSelect(selectedItem)
+    }
   }
 
   function handleTimelineScroll() {

@@ -5,7 +5,6 @@ import {
   MinusIcon,
   PlusIcon,
   RulerSquareIcon,
-  SliderIcon,
   TargetIcon,
 } from '@radix-ui/react-icons'
 import {
@@ -19,35 +18,24 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import { Link } from '@tanstack/react-router'
-import type { ComposerState } from '@/types/composer'
 import type { AppPreferences } from '@/types/preferences'
 import './RightMapControls.css'
 
 interface RightMapControlsProps {
-  composerState?: ComposerState
   preferences: AppPreferences
   cursor: { longitude: number; latitude: number } | null
   onPreferencesChange: (preferences: AppPreferences) => void
   onZoomIn: () => void
   onZoomOut: () => void
-  onEnableSwipe: () => void
 }
 
 export function RightMapControls({
-  composerState,
   preferences,
   cursor,
   onPreferencesChange,
   onZoomIn,
   onZoomOut,
-  onEnableSwipe,
 }: RightMapControlsProps) {
-  const hasStacUrls = Boolean(
-    composerState?.single.urls.length ||
-      composerState?.left.urls.length ||
-      composerState?.right.urls.length,
-  )
-
   return (
     <>
       <fieldset className="map-tools map-tools-top">
@@ -70,23 +58,6 @@ export function RightMapControls({
             onClick={() => undefined}
           >
             <MagnifyingGlassIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip
-          content={
-            hasStacUrls
-              ? 'Enable swipe compare'
-              : 'Add at least one STAC URL before enabling swipe compare.'
-          }
-        >
-          <IconButton
-            variant="surface"
-            size="3"
-            aria-label="Swipe compare"
-            disabled={!hasStacUrls}
-            onClick={onEnableSwipe}
-          >
-            <SliderIcon />
           </IconButton>
         </Tooltip>
       </fieldset>

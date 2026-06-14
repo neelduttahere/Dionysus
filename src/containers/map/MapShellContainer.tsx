@@ -90,7 +90,6 @@ export function MapShellContainer({
         )}
       </FloatingPanel>
       <RightMapControls
-        composerState={composerState}
         preferences={preferences}
         cursor={cursor}
         onPreferencesChange={setPreferences}
@@ -106,7 +105,6 @@ export function MapShellContainer({
             zoom: Math.max(currentViewState.zoom - 1, 0),
           }))
         }
-        onEnableSwipe={() => undefined}
       />
     </main>
   )

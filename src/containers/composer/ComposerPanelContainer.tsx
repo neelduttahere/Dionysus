@@ -85,6 +85,11 @@ export function ComposerPanelContainer({
       onModeChange={composerSearch.setMode}
       onLoadSingleUrls={(urls) => loadUrls('single', urls)}
       onLoadSideUrls={(side, urls) => loadUrls(side, urls)}
+      onTimelineItemSelect={(item) => {
+        if (item.bbox) {
+          onFitBounds(item.bbox)
+        }
+      }}
       onSingleChange={composerSearch.updateSingle}
       onSideChange={composerSearch.updateSide}
       loadingSide={loadingSide}
