@@ -5,6 +5,7 @@ import { RightMapControls } from '@/components/map/RightMapControls'
 import { FloatingPanel } from '@/components/panel/FloatingPanel'
 import { ComposerPanelContainer } from '@/containers/composer/ComposerPanelContainer'
 import { SettingsPanelContainer } from '@/containers/settings/SettingsPanelContainer'
+import { useStacAssetStatistics } from '@/hooks/api/useStacAssetStatistics'
 import { useStacTileJson } from '@/hooks/api/useStacTileJson'
 import { useAppPreferences } from '@/hooks/preferences/useAppPreferences'
 import type { ComposerState } from '@/types/composer'
@@ -31,12 +32,30 @@ export function MapShellContainer({
     null,
   )
   const activeStacUrl = getActiveStacUrl(composerState)
+  const activeTileAssets = getActiveTileAssets(composerState)
+  const shouldAutoRescale = isSingleBandRender(composerState)
+  const stacAssetStatistics = useStacAssetStatistics({
+    titilerUrl: preferences.titilerUrl,
+    stacUrl: activeStacUrl,
+    assets: activeTileAssets,
+    enabled: shouldAutoRescale,
+  })
+  const rescale = shouldAutoRescale
+    ? getSingleBandRescale(stacAssetStatistics.data, activeTileAssets[0])
+    : undefined
+  const fallbackRescale =
+    shouldAutoRescale && stacAssetStatistics.isError ? ['0,4000'] : undefined
+  const resolvedRescale = rescale ?? fallbackRescale
+  const canLoadTileJson =
+    !shouldAutoRescale || Boolean(resolvedRescale) || stacAssetStatistics.isError
   const stacTileJson = useStacTileJson({
     titilerUrl: preferences.titilerUrl,
     stacUrl: activeStacUrl,
-    assets: ['visual'],
+    assets: activeTileAssets,
+    rescale: resolvedRescale,
+    enabled: canLoadTileJson,
   })
-  const rasterTileUrl = stacTileJson.data?.tiles[0] ?? null
+  const rasterTileUrl = canLoadTileJson ? (stacTileJson.data?.tiles[0] ?? null) : null
 
   function fitBounds(bbox: BBox) {
     const viewport = new WebMercatorViewport({
@@ -79,6 +98,9 @@ export function MapShellContainer({
           <ComposerPanelContainer
             state={composerState}
             areaUnit={preferences.areaUnit}
+            isComputingRasterStatistics={
+              shouldAutoRescale && stacAssetStatistics.isFetching
+            }
             onFitBounds={fitBounds}
           />
         ) : (
@@ -116,4 +138,71 @@ function getActiveStacUrl(composerState: ComposerState): string | null {
   }
 
   return composerState.left.activeItemId
+}
+
+function getActiveTileAssets(composerState: ComposerState): string[] {
+  const instance =
+    composerState.mode === 'single' ? composerState.single : composerState.left
+  const activeItemId = instance.activeItemId
+
+  if (!activeItemId) {
+    return ['visual']
+  }
+
+  const config = instance.configs[activeItemId]
+
+  if (config?.mode === 'single-band' && config.assetKeys[0]) {
+    return [config.assetKeys[0]]
+  }
+
+  return ['visual']
+}
+
+function isSingleBandRender(composerState: ComposerState): boolean {
+  const instance =
+    composerState.mode === 'single' ? composerState.single : composerState.left
+  const activeItemId = instance.activeItemId
+
+  if (!activeItemId) {
+    return false
+  }
+
+  return instance.configs[activeItemId]?.mode === 'single-band'
+}
+
+function getSingleBandRescale(
+  statistics:
+    | Record<
+        string,
+        Record<
+          string,
+          {
+            min?: number
+            max?: number
+            percentile_2?: number
+            percentile_98?: number
+          }
+        >
+      >
+    | undefined,
+  assetKey: string | undefined,
+): string[] | undefined {
+  if (!statistics || !assetKey) {
+    return undefined
+  }
+
+  const firstBandStatistics = Object.values(statistics[assetKey] ?? {})[0]
+
+  if (!firstBandStatistics) {
+    return undefined
+  }
+
+  const min = firstBandStatistics.percentile_2 ?? firstBandStatistics.min
+  const max = firstBandStatistics.percentile_98 ?? firstBandStatistics.max
+
+  if (typeof min !== 'number' || typeof max !== 'number' || min >= max) {
+    return undefined
+  }
+
+  return [`${min},${max}`]
 }

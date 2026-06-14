@@ -1,29 +1,27 @@
 import { useQuery } from '@tanstack/react-query'
-import { getStacTileJson } from '@/api/titiler/endpoints'
+import { getStacAssetStatistics } from '@/api/titiler/endpoints'
 
-export function useStacTileJson({
+export function useStacAssetStatistics({
   titilerUrl,
   stacUrl,
   assets,
-  rescale,
   enabled = true,
 }: {
   titilerUrl: string
   stacUrl: string | null
   assets: string[]
-  rescale?: string[]
   enabled?: boolean
 }) {
   return useQuery({
-    queryKey: ['titiler', 'stacTileJson', titilerUrl, stacUrl, assets, rescale],
+    queryKey: ['titiler', 'stacAssetStatistics', titilerUrl, stacUrl, assets],
     queryFn: () =>
-      getStacTileJson({
+      getStacAssetStatistics({
         titilerUrl,
         stacUrl: stacUrl as string,
         assets,
-        rescale,
       }),
     enabled: Boolean(enabled && titilerUrl && stacUrl && assets.length > 0),
     retry: false,
+    staleTime: 5 * 60 * 1000,
   })
 }

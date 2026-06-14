@@ -1,0 +1,11 @@
+.field-label-with-info {
+  min-width: 0;
+}
+
+.field-label-info-icon {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+  cursor: help;
+  flex: none;
+}

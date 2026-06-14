@@ -16,16 +16,24 @@ import {
   TextField,
 } from '@radix-ui/themes'
 import { useEffect, useRef, useState } from 'react'
-import type { ComposerInstanceState, ComposerState, RenderMode } from '@/types/composer'
+import { FieldLabelWithInfo } from '@/components/ui/FieldLabelWithInfo'
+import type {
+  ComposerInstanceState,
+  ComposerState,
+  RenderConfig,
+  RenderMode,
+} from '@/types/composer'
 import type { AreaUnit } from '@/types/preferences'
 import type { ParsedStacItem } from '@/types/stac'
 import { formatArea } from '@/utils/geo/formatArea'
+import { getSingleBandAssetOptions } from '@/utils/stac/assets'
 import { parseCommaSeparatedUrls } from '@/utils/stac/parseStacUrls'
 import './ComposerPanel.css'
 
 interface ComposerPanelProps {
   state: ComposerState
   areaUnit: AreaUnit
+  isComputingRasterStatistics: boolean
   singleTimelineItems: ParsedStacItem[]
   leftTimelineItems: ParsedStacItem[]
   rightTimelineItems: ParsedStacItem[]
@@ -42,6 +50,7 @@ interface ComposerPanelProps {
 export function ComposerPanel({
   state,
   areaUnit,
+  isComputingRasterStatistics,
   singleTimelineItems,
   leftTimelineItems,
   rightTimelineItems,
@@ -85,6 +94,7 @@ export function ComposerPanel({
           instance={state.single}
           timelineItems={singleTimelineItems}
           areaUnit={areaUnit}
+          isComputingRasterStatistics={isComputingRasterStatistics}
           isLoading={loadingSide === 'single'}
           loadError={loadError}
           onLoadUrls={onLoadSingleUrls}
@@ -105,6 +115,7 @@ export function ComposerPanel({
             instance={state[activeSide]}
             timelineItems={activeSide === 'left' ? leftTimelineItems : rightTimelineItems}
             areaUnit={areaUnit}
+            isComputingRasterStatistics={isComputingRasterStatistics}
             isLoading={loadingSide === activeSide}
             loadError={loadError}
             onLoadUrls={(urls) => onLoadSideUrls(activeSide, urls)}
@@ -122,6 +133,7 @@ interface ComposerInstanceEditorProps {
   instance: ComposerInstanceState
   timelineItems: ParsedStacItem[]
   areaUnit: AreaUnit
+  isComputingRasterStatistics: boolean
   isLoading: boolean
   loadError: string | null
   onLoadUrls: (urls: string[]) => Promise<void>
@@ -134,6 +146,7 @@ function ComposerInstanceEditor({
   instance,
   timelineItems,
   areaUnit,
+  isComputingRasterStatistics,
   isLoading,
   loadError,
   onLoadUrls,
@@ -142,10 +155,15 @@ function ComposerInstanceEditor({
 }: ComposerInstanceEditorProps) {
   const [draftUrls, setDraftUrls] = useState(instance.urls.join(', '))
   const [alert, setAlert] = useState<string | null>(null)
-  const [renderMode, setRenderMode] = useState<RenderMode>('default')
   const [isTimelineScrolling, setIsTimelineScrolling] = useState(false)
   const timelineScrollTimeout = useRef<number | null>(null)
   const activeIndex = Math.max(0, instance.urls.indexOf(instance.activeItemId ?? ''))
+  const activeItem =
+    timelineItems.find((item) => item.url === instance.activeItemId) ??
+    timelineItems[0] ??
+    null
+  const activeConfig = getActiveRenderConfig(instance, activeItem)
+  const singleBandAssets = getSingleBandAssetOptions(activeItem)
 
   useEffect(() => {
     return () => {
@@ -172,6 +190,33 @@ function ComposerInstanceEditor({
     if (selectedItem) {
       onTimelineItemSelect(selectedItem)
     }
+  }
+
+  function updateActiveConfig(nextConfig: RenderConfig) {
+    if (!activeItem) {
+      return
+    }
+
+    onChange({
+      ...instance,
+      configs: {
+        ...instance.configs,
+        [activeItem.url]: nextConfig,
+      },
+    })
+  }
+
+  function updateRenderMode(mode: RenderMode) {
+    const firstSingleBandAsset = singleBandAssets[0]?.key
+
+    updateActiveConfig({
+      ...activeConfig,
+      mode,
+      assetKeys:
+        mode === 'single-band'
+          ? [activeConfig.assetKeys[0] ?? firstSingleBandAsset ?? '']
+          : activeConfig.assetKeys,
+    })
   }
 
   function handleTimelineScroll() {
@@ -238,41 +283,39 @@ function ComposerInstanceEditor({
               </Text>
             </Flex>
 
-          {timelineItems.length > 0 ? (
-            <div className="timeline-scroll-shell">
-              <ScrollArea
-                className="timeline-scroll-area"
-                scrollbars="horizontal"
-                type="hover"
-                onScrollCapture={handleTimelineScroll}
-              >
-                <div className="timeline-scroll-content">
-                  <SegmentedControl.Root
-                    className="timeline-segments"
-                    value={instance.activeItemId ?? timelineItems[0]?.url}
-                    onValueChange={selectTimelineItem}
-                  >
-                    {timelineItems.map((item, index) => (
-                      <SegmentedControl.Item key={item.url} value={item.url}>
-                        <HoverCard.Root
-                          open={isTimelineScrolling ? false : undefined}
-                        >
-                          <HoverCard.Trigger>
-                            <span className="timeline-segment-label">
-                              {formatTimelineDate(item.datetime, index)}
-                            </span>
-                          </HoverCard.Trigger>
-                          <HoverCard.Content width="340px">
-                            <TimelineItemDetails item={item} areaUnit={areaUnit} />
-                          </HoverCard.Content>
-                        </HoverCard.Root>
-                      </SegmentedControl.Item>
-                    ))}
-                  </SegmentedControl.Root>
-                </div>
-              </ScrollArea>
-            </div>
-          ) : (
+            {timelineItems.length > 0 ? (
+              <div className="timeline-scroll-shell">
+                <ScrollArea
+                  className="timeline-scroll-area"
+                  scrollbars="horizontal"
+                  type="hover"
+                  onScrollCapture={handleTimelineScroll}
+                >
+                  <div className="timeline-scroll-content">
+                    <SegmentedControl.Root
+                      className="timeline-segments"
+                      value={instance.activeItemId ?? timelineItems[0]?.url}
+                      onValueChange={selectTimelineItem}
+                    >
+                      {timelineItems.map((item, index) => (
+                        <SegmentedControl.Item key={item.url} value={item.url}>
+                          <HoverCard.Root open={isTimelineScrolling ? false : undefined}>
+                            <HoverCard.Trigger>
+                              <span className="timeline-segment-label">
+                                {formatTimelineDate(item.datetime, index)}
+                              </span>
+                            </HoverCard.Trigger>
+                            <HoverCard.Content width="340px">
+                              <TimelineItemDetails item={item} areaUnit={areaUnit} />
+                            </HoverCard.Content>
+                          </HoverCard.Root>
+                        </SegmentedControl.Item>
+                      ))}
+                    </SegmentedControl.Root>
+                  </div>
+                </ScrollArea>
+              </div>
+            ) : (
               <Text size="2" color="gray">
                 Loading timeline metadata...
               </Text>
@@ -291,8 +334,8 @@ function ComposerInstanceEditor({
                 Render mode
               </Text>
               <Select.Root
-                value={renderMode}
-                onValueChange={(value) => setRenderMode(value as RenderMode)}
+                value={activeConfig.mode}
+                onValueChange={(value) => updateRenderMode(value as RenderMode)}
               >
                 <Select.Trigger aria-label="Render mode" />
                 <Select.Content>
@@ -305,7 +348,21 @@ function ComposerInstanceEditor({
               </Select.Root>
             </div>
 
-            {renderMode === 'expression' ? <ExpressionRenderControls /> : null}
+            {activeConfig.mode === 'single-band' ? (
+              <SingleBandRenderControls
+                assets={singleBandAssets}
+                selectedAssetKey={activeConfig.assetKeys[0] ?? ''}
+                isComputingStatistics={isComputingRasterStatistics}
+                onSelectedAssetChange={(assetKey) =>
+                  updateActiveConfig({
+                    ...activeConfig,
+                    assetKeys: [assetKey],
+                  })
+                }
+              />
+            ) : null}
+
+            {activeConfig.mode === 'expression' ? <ExpressionRenderControls /> : null}
           </div>
 
           <Button
@@ -330,6 +387,85 @@ function ComposerInstanceEditor({
         </>
       )}
     </section>
+  )
+}
+
+function getActiveRenderConfig(
+  instance: ComposerInstanceState,
+  activeItem: ParsedStacItem | null,
+): RenderConfig {
+  if (activeItem && instance.configs[activeItem.url]) {
+    return instance.configs[activeItem.url]
+  }
+
+  return {
+    mode: 'default',
+    assetKeys: [],
+    expression: '',
+    colormap: 'viridis',
+    buckets: [],
+  }
+}
+
+function SingleBandRenderControls({
+  assets,
+  selectedAssetKey,
+  isComputingStatistics,
+  onSelectedAssetChange,
+}: {
+  assets: Array<{ key: string; label: string }>
+  selectedAssetKey: string
+  isComputingStatistics: boolean
+  onSelectedAssetChange: (assetKey: string) => void
+}) {
+  if (assets.length === 0) {
+    return (
+      <Callout.Root color="amber" variant="surface">
+        <Callout.Icon>
+          <InfoCircledIcon />
+        </Callout.Icon>
+        <Callout.Text>
+          No single-band raster assets were found for this item.
+        </Callout.Text>
+      </Callout.Root>
+    )
+  }
+
+  return (
+    <div className="render-mode-controls">
+      <div className="field">
+        <Flex align="center" justify="between">
+          <FieldLabelWithInfo
+            label="Band"
+            title="Single-band rendering"
+            description="Renders one raster asset from the active STAC item, such as red, NIR, SWIR, or scene classification. Dionysus asks TiTiler for raster statistics and applies a contrast stretch so the selected band is easier to inspect on the map."
+            side="right"
+            align="center"
+          />
+          {isComputingStatistics ? (
+            <Flex align="center" gap="2">
+              <Spinner size="1" />
+              <Text size="1" color="gray">
+                Computing contrast
+              </Text>
+            </Flex>
+          ) : null}
+        </Flex>
+        <Select.Root
+          value={selectedAssetKey || assets[0]?.key}
+          onValueChange={onSelectedAssetChange}
+        >
+          <Select.Trigger aria-label="Band" />
+          <Select.Content>
+            {assets.map((asset) => (
+              <Select.Item key={asset.key} value={asset.key}>
+                {asset.label}
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Root>
+      </div>
+    </div>
   )
 }
 

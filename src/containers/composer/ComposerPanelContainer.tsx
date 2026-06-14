@@ -10,12 +10,14 @@ import type { BBox } from '@/utils/geo/bbox'
 interface ComposerPanelContainerProps {
   state: ComposerState
   areaUnit: AreaUnit
+  isComputingRasterStatistics: boolean
   onFitBounds: (bbox: BBox) => void
 }
 
 export function ComposerPanelContainer({
   state,
   areaUnit,
+  isComputingRasterStatistics,
   onFitBounds,
 }: ComposerPanelContainerProps) {
   const composerSearch = useComposerSearchState(state)
@@ -79,6 +81,7 @@ export function ComposerPanelContainer({
     <ComposerPanel
       state={state}
       areaUnit={areaUnit}
+      isComputingRasterStatistics={isComputingRasterStatistics}
       singleTimelineItems={singleItems.data ?? []}
       leftTimelineItems={leftItems.data ?? []}
       rightTimelineItems={rightItems.data ?? []}
