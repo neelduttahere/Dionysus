@@ -5,20 +5,34 @@ export function useStacAssetStatistics({
   titilerUrl,
   stacUrl,
   assets,
+  expression,
+  assetAsBand,
   enabled = true,
 }: {
   titilerUrl: string
   stacUrl: string | null
   assets: string[]
+  expression?: string
+  assetAsBand?: boolean
   enabled?: boolean
 }) {
   return useQuery({
-    queryKey: ['titiler', 'stacAssetStatistics', titilerUrl, stacUrl, assets],
+    queryKey: [
+      'titiler',
+      'stacAssetStatistics',
+      titilerUrl,
+      stacUrl,
+      assets,
+      expression,
+      assetAsBand,
+    ],
     queryFn: () =>
       getStacAssetStatistics({
         titilerUrl,
         stacUrl: stacUrl as string,
         assets,
+        expression,
+        assetAsBand,
       }),
     enabled: Boolean(enabled && titilerUrl && stacUrl && assets.length > 0),
     retry: false,

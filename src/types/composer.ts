@@ -13,6 +13,8 @@ export interface RenderConfig {
   assetKeys: string[]
   expression: string
   colormap: string
+  appliedExpression?: string
+  appliedColormap?: string
   buckets: ColorBucket[]
 }
 

@@ -2,7 +2,6 @@ import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import {
   Button,
   Callout,
-  DataList,
   Flex,
   Heading,
   ScrollArea,
@@ -12,10 +11,12 @@ import {
   Spinner,
   Text,
   TextArea,
-  TextField,
 } from '@radix-ui/themes'
 import { useState } from 'react'
-import { FieldLabelWithInfo } from '@/components/ui/FieldLabelWithInfo'
+import { ExpressionRenderControls } from '@/components/composer/render-controls/ExpressionRenderControls'
+import { SingleBandRenderControls } from '@/components/composer/render-controls/SingleBandRenderControls'
+import { formatTimelineDate } from '@/components/composer/timeline/formatTimelineDate'
+import { TimelineItemDetails } from '@/components/composer/timeline/TimelineItemDetails'
 import type {
   ComposerInstanceState,
   ComposerState,
@@ -24,7 +25,6 @@ import type {
 } from '@/types/composer'
 import type { AreaUnit } from '@/types/preferences'
 import type { ParsedStacItem } from '@/types/stac'
-import { formatArea } from '@/utils/geo/formatArea'
 import { getSingleBandAssetOptions } from '@/utils/stac/assets'
 import { parseCommaSeparatedUrls } from '@/utils/stac/parseStacUrls'
 import './ComposerPanel.css'
@@ -336,7 +336,41 @@ function ComposerInstanceEditor({
               />
             ) : null}
 
-            {activeConfig.mode === 'expression' ? <ExpressionRenderControls /> : null}
+            {activeConfig.mode === 'expression' ? (
+              <ExpressionRenderControls
+                expression={activeConfig.expression}
+                colormap={activeConfig.colormap}
+                appliedExpression={activeConfig.appliedExpression}
+                appliedColormap={activeConfig.appliedColormap}
+                isComputingStatistics={isComputingRasterStatistics}
+                onExpressionChange={(expression) =>
+                  updateActiveConfig({
+                    ...activeConfig,
+                    expression,
+                  })
+                }
+                onColormapChange={(colormap) =>
+                  updateActiveConfig({
+                    ...activeConfig,
+                    colormap,
+                  })
+                }
+                onCompute={() => {
+                  const expression = activeConfig.expression.trim()
+
+                  if (!expression) {
+                    return
+                  }
+
+                  updateActiveConfig({
+                    ...activeConfig,
+                    expression,
+                    appliedExpression: expression,
+                    appliedColormap: activeConfig.colormap,
+                  })
+                }}
+              />
+            ) : null}
           </div>
 
           <Button
@@ -377,146 +411,8 @@ function getActiveRenderConfig(
     assetKeys: [],
     expression: '',
     colormap: 'viridis',
+    appliedExpression: '',
+    appliedColormap: 'viridis',
     buckets: [],
   }
-}
-
-function SingleBandRenderControls({
-  assets,
-  selectedAssetKey,
-  isComputingStatistics,
-  onSelectedAssetChange,
-}: {
-  assets: Array<{ key: string; label: string }>
-  selectedAssetKey: string
-  isComputingStatistics: boolean
-  onSelectedAssetChange: (assetKey: string) => void
-}) {
-  if (assets.length === 0) {
-    return (
-      <Callout.Root color="amber" variant="surface">
-        <Callout.Icon>
-          <InfoCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          No single-band raster assets were found for this item.
-        </Callout.Text>
-      </Callout.Root>
-    )
-  }
-
-  return (
-    <div className="render-mode-controls">
-      <div className="field">
-        <Flex align="center" justify="between">
-          <FieldLabelWithInfo
-            label="Band"
-            title="Single-band rendering"
-            description="Renders one raster asset from the active STAC item, such as red, NIR, SWIR, or scene classification. Dionysus asks TiTiler for raster statistics and applies a contrast stretch so the selected band is easier to inspect on the map."
-            side="right"
-            align="center"
-          />
-          {isComputingStatistics ? (
-            <Flex align="center" gap="2">
-              <Spinner size="1" />
-              <Text size="1" color="gray">
-                Computing contrast
-              </Text>
-            </Flex>
-          ) : null}
-        </Flex>
-        <Select.Root
-          value={selectedAssetKey || assets[0]?.key}
-          onValueChange={onSelectedAssetChange}
-        >
-          <Select.Trigger aria-label="Band" />
-          <Select.Content>
-            {assets.map((asset) => (
-              <Select.Item key={asset.key} value={asset.key}>
-                {asset.label}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
-      </div>
-    </div>
-  )
-}
-
-function ExpressionRenderControls() {
-  return (
-    <div className="render-mode-controls">
-      <div className="field">
-        <Text size="2" weight="medium">
-          Band expression
-        </Text>
-        <TextField.Root aria-label="Band expression" placeholder="(nir-red)/(nir+red)" />
-      </div>
-
-      <div className="field">
-        <Text size="2" weight="medium">
-          Colormap
-        </Text>
-        <Select.Root defaultValue="viridis">
-          <Select.Trigger aria-label="Colormap" />
-          <Select.Content>
-            <Select.Item value="viridis">viridis</Select.Item>
-            <Select.Item value="plasma">plasma</Select.Item>
-            <Select.Item value="rdylgn">RdYlGn</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      </div>
-    </div>
-  )
-}
-
-function TimelineItemDetails({
-  item,
-  areaUnit,
-}: {
-  item: ParsedStacItem
-  areaUnit: AreaUnit
-}) {
-  return (
-    <div className="timeline-details">
-      <Text size="1" weight="bold">
-        {item.id}
-      </Text>
-      <DataList.Root size="1">
-        <TimelineDetail label="Datetime" value={item.datetime ?? 'Unknown'} />
-        <TimelineDetail label="Constellation" value={item.constellation ?? 'Unknown'} />
-        <TimelineDetail label="Platform" value={item.platform ?? 'Unknown'} />
-        <TimelineDetail label="Bands" value={String(item.bandCount)} />
-        <TimelineDetail
-          label="Coverage"
-          value={
-            item.areaSquareMeters === null
-              ? 'Unknown'
-              : formatArea(item.areaSquareMeters, areaUnit)
-          }
-        />
-      </DataList.Root>
-    </div>
-  )
-}
-
-function TimelineDetail({ label, value }: { label: string; value: string }) {
-  return (
-    <DataList.Item>
-      <DataList.Label>{label}</DataList.Label>
-      <DataList.Value>{value}</DataList.Value>
-    </DataList.Item>
-  )
-}
-
-function formatTimelineDate(datetime: string | null, index: number): string {
-  if (!datetime) {
-    return `Item ${index + 1}`
-  }
-
-  return new Intl.DateTimeFormat('en', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(datetime))
 }

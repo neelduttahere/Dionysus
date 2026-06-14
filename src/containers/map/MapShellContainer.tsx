@@ -1,5 +1,6 @@
 import { WebMercatorViewport } from '@deck.gl/core'
 import { useState } from 'react'
+import type { StacStatisticsResponse, StatisticsBand } from '@/api/titiler/endpoints'
 import { MapCanvas, type MapViewState } from '@/components/map/MapCanvas'
 import { RightMapControls } from '@/components/map/RightMapControls'
 import { FloatingPanel } from '@/components/panel/FloatingPanel'
@@ -8,8 +9,9 @@ import { SettingsPanelContainer } from '@/containers/settings/SettingsPanelConta
 import { useStacAssetStatistics } from '@/hooks/api/useStacAssetStatistics'
 import { useStacTileJson } from '@/hooks/api/useStacTileJson'
 import { useAppPreferences } from '@/hooks/preferences/useAppPreferences'
-import type { ComposerState } from '@/types/composer'
+import type { ComposerInstanceState, ComposerState } from '@/types/composer'
 import type { BBox } from '@/utils/geo/bbox'
+import { getExpressionRenderParams } from '@/utils/titiler/expressions'
 import { defaultComposerState } from '@/utils/url/composerSearch'
 import './MapShellContainer.css'
 
@@ -32,19 +34,26 @@ export function MapShellContainer({
     null,
   )
   const activeStacUrl = getActiveStacUrl(composerState)
-  const activeTileAssets = getActiveTileAssets(composerState)
-  const shouldAutoRescale = isSingleBandRender(composerState)
+  const activeRenderRequest = getActiveRenderRequest(composerState)
+  const activeTileAssets = activeRenderRequest.assets
+  const shouldAutoRescale =
+    activeRenderRequest.kind === 'single-band' ||
+    activeRenderRequest.kind === 'expression'
   const stacAssetStatistics = useStacAssetStatistics({
     titilerUrl: preferences.titilerUrl,
     stacUrl: activeStacUrl,
     assets: activeTileAssets,
+    expression: activeRenderRequest.expression,
+    assetAsBand: activeRenderRequest.assetAsBand,
     enabled: shouldAutoRescale,
   })
   const rescale = shouldAutoRescale
-    ? getSingleBandRescale(stacAssetStatistics.data, activeTileAssets[0])
+    ? getStatisticsRescale(stacAssetStatistics.data, activeTileAssets[0])
     : undefined
-  const fallbackRescale =
-    shouldAutoRescale && stacAssetStatistics.isError ? ['0,4000'] : undefined
+  const fallbackRescale = getFallbackRescale(
+    activeRenderRequest.kind,
+    stacAssetStatistics.isError,
+  )
   const resolvedRescale = rescale ?? fallbackRescale
   const canLoadTileJson =
     !shouldAutoRescale || Boolean(resolvedRescale) || stacAssetStatistics.isError
@@ -53,6 +62,9 @@ export function MapShellContainer({
     stacUrl: activeStacUrl,
     assets: activeTileAssets,
     rescale: resolvedRescale,
+    expression: activeRenderRequest.expression,
+    colormapName: activeRenderRequest.colormapName,
+    assetAsBand: activeRenderRequest.assetAsBand,
     enabled: canLoadTileJson,
   })
   const rasterTileUrl = canLoadTileJson ? (stacTileJson.data?.tiles[0] ?? null) : null
@@ -140,58 +152,73 @@ function getActiveStacUrl(composerState: ComposerState): string | null {
   return composerState.left.activeItemId
 }
 
-function getActiveTileAssets(composerState: ComposerState): string[] {
-  const instance =
-    composerState.mode === 'single' ? composerState.single : composerState.left
+interface TileRenderRequest {
+  kind: 'visual' | 'single-band' | 'expression'
+  assets: string[]
+  expression?: string
+  colormapName?: string
+  assetAsBand?: boolean
+}
+
+function getActiveRenderRequest(composerState: ComposerState): TileRenderRequest {
+  const instance = getVisibleComposerInstance(composerState)
   const activeItemId = instance.activeItemId
 
   if (!activeItemId) {
-    return ['visual']
+    return getVisualRenderRequest()
   }
 
   const config = instance.configs[activeItemId]
 
   if (config?.mode === 'single-band' && config.assetKeys[0]) {
-    return [config.assetKeys[0]]
+    return {
+      kind: 'single-band',
+      assets: [config.assetKeys[0]],
+    }
   }
 
-  return ['visual']
-}
+  if (config?.mode === 'expression' && config.appliedExpression?.trim()) {
+    const expression = config.appliedExpression.trim()
+    const expressionParams = getExpressionRenderParams(expression)
 
-function isSingleBandRender(composerState: ComposerState): boolean {
-  const instance =
-    composerState.mode === 'single' ? composerState.single : composerState.left
-  const activeItemId = instance.activeItemId
+    if (expressionParams.assets.length === 0) {
+      return getVisualRenderRequest()
+    }
 
-  if (!activeItemId) {
-    return false
+    return {
+      kind: 'expression',
+      assets: expressionParams.assets,
+      expression: expressionParams.expression,
+      colormapName: (config.appliedColormap || config.colormap).toLowerCase(),
+      assetAsBand: true,
+    }
   }
 
-  return instance.configs[activeItemId]?.mode === 'single-band'
+  return getVisualRenderRequest()
 }
 
-function getSingleBandRescale(
-  statistics:
-    | Record<
-        string,
-        Record<
-          string,
-          {
-            min?: number
-            max?: number
-            percentile_2?: number
-            percentile_98?: number
-          }
-        >
-      >
-    | undefined,
+function getVisibleComposerInstance(
+  composerState: ComposerState,
+): ComposerInstanceState {
+  return composerState.mode === 'single' ? composerState.single : composerState.left
+}
+
+function getVisualRenderRequest(): TileRenderRequest {
+  return {
+    kind: 'visual',
+    assets: ['visual'],
+  }
+}
+
+function getStatisticsRescale(
+  statistics: StacStatisticsResponse | undefined,
   assetKey: string | undefined,
 ): string[] | undefined {
-  if (!statistics || !assetKey) {
+  if (!statistics) {
     return undefined
   }
 
-  const firstBandStatistics = Object.values(statistics[assetKey] ?? {})[0]
+  const firstBandStatistics = getFirstStatisticsBand(statistics, assetKey)
 
   if (!firstBandStatistics) {
     return undefined
@@ -205,4 +232,69 @@ function getSingleBandRescale(
   }
 
   return [`${min},${max}`]
+}
+
+function getFirstStatisticsBand(
+  statistics: StacStatisticsResponse,
+  assetKey: string | undefined,
+): StatisticsBand | undefined {
+  if (assetKey) {
+    const assetStatistics = statistics[assetKey]
+
+    if (assetStatistics && !isStatisticsBand(assetStatistics)) {
+      const firstAssetBand = Object.values(assetStatistics).find(isStatisticsBand)
+
+      if (firstAssetBand) {
+        return firstAssetBand
+      }
+    }
+  }
+
+  for (const value of Object.values(statistics)) {
+    if (isStatisticsBand(value)) {
+      return value
+    }
+
+    const firstNestedBand = Object.values(value).find(isStatisticsBand)
+
+    if (firstNestedBand) {
+      return firstNestedBand
+    }
+  }
+
+  return undefined
+}
+
+function isStatisticsBand(value: unknown): value is StatisticsBand {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const band = value as StatisticsBand
+
+  return (
+    typeof band.percentile_2 === 'number' ||
+    typeof band.percentile_98 === 'number' ||
+    typeof band.min === 'number' ||
+    typeof band.max === 'number'
+  )
+}
+
+function getFallbackRescale(
+  renderKind: TileRenderRequest['kind'],
+  hasStatisticsError: boolean,
+): string[] | undefined {
+  if (!hasStatisticsError) {
+    return undefined
+  }
+
+  if (renderKind === 'single-band') {
+    return ['0,4000']
+  }
+
+  if (renderKind === 'expression') {
+    return ['-1,1']
+  }
+
+  return undefined
 }
