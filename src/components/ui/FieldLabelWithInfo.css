@@ -5,7 +5,7 @@
 .field-label-info-icon {
   width: 14px;
   height: 14px;
-  color: #9ca3af;
+  color: var(--gray-9);
   cursor: help;
   flex: none;
 }

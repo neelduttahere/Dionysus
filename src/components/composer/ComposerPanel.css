@@ -2,13 +2,13 @@
 .composer-instance {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
   min-width: 0;
   max-width: 100%;
 }
 
 .composer-panel {
-  padding: 16px;
+  padding: var(--space-4);
   overflow: hidden;
 }
 
@@ -21,7 +21,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: var(--space-2);
   min-width: 0;
   max-width: 100%;
 }
@@ -30,20 +30,20 @@
 .render-mode-controls {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .timeline-block {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
-  padding: 12px;
-  background: rgb(15 23 42 / 56%);
-  border: 1px solid rgb(148 163 184 / 18%);
-  border-radius: 8px;
+  padding: var(--space-3);
+  background: var(--gray-a3);
+  border: 1px solid var(--gray-a5);
+  border-radius: var(--radius-3);
 }
 
 .timeline-segments {
@@ -91,12 +91,12 @@
 }
 
 .active-timeline-details {
-  padding-top: 8px;
-  border-top: 1px solid rgb(148 163 184 / 16%);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--gray-a4);
 }
 
 .timeline-details {
   display: grid;
   min-width: 240px;
-  gap: 8px;
+  gap: var(--space-2);
 }

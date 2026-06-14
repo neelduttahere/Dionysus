@@ -1,8 +1,8 @@
 .settings-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: var(--space-4);
+  padding: var(--space-4);
 }
 
 .settings-intro {
