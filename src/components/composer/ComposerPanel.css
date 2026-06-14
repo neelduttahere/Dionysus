@@ -1,0 +1,97 @@
+.composer-panel,
+.composer-instance {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.composer-panel {
+  padding: 16px;
+  overflow: hidden;
+}
+
+.composer-intro {
+  margin: 6px 0 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.render-controls,
+.render-mode-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 12px;
+  background: rgb(15 23 42 / 56%);
+  border: 1px solid rgb(148 163 184 / 18%);
+  border-radius: 8px;
+}
+
+.timeline-segments {
+  width: max-content;
+}
+
+.timeline-scroll-shell {
+  width: min(100%, 100cqw);
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.timeline-scroll-area {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+}
+
+.timeline-scroll-area .rt-ScrollAreaViewport {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.timeline-scroll-content {
+  width: max-content;
+  max-width: none;
+  padding-bottom: 8px;
+}
+
+.timeline-segment-label {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  white-space: nowrap;
+}
+
+.active-url {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.timeline-details {
+  display: grid;
+  min-width: 240px;
+  gap: 8px;
+}

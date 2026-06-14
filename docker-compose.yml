@@ -1,0 +1,17 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      VITE_DEFAULT_TITILER_URL: http://localhost:8000
+      VITE_BASE_PATH: /
+    ports:
+      - "5173:5173"
+    depends_on:
+      - titiler
+
+  titiler:
+    image: ghcr.io/developmentseed/titiler:latest
+    ports:
+      - "8000:80"

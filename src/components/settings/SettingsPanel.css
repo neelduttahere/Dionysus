@@ -1,0 +1,11 @@
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.settings-intro {
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
