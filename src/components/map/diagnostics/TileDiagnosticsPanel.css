@@ -17,10 +17,43 @@
 .tile-diagnostics-scroll {
   width: 100%;
   height: min(420px, calc(100vh - 180px));
+  max-height: min(420px, calc(100vh - 180px));
+}
+
+.tile-diagnostics-scroll :where(.rt-ScrollAreaViewport) {
+  height: min(420px, calc(100vh - 180px));
+  max-height: min(420px, calc(100vh - 180px));
 }
 
 .tile-diagnostics-table {
-  min-width: 680px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  table-layout: fixed;
+}
+
+.tile-diagnostics-table table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+}
+
+.tile-diagnostics-table :where(th, td) {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tile-diagnostics-request-column {
+  width: 58%;
+  max-width: 0;
+}
+
+.tile-diagnostics-status-column {
+  width: 22%;
+}
+
+.tile-diagnostics-timing-column {
+  width: 20%;
 }
 
 .tile-diagnostics-empty {
@@ -30,14 +63,26 @@
 
 .tile-diagnostics-url {
   display: block;
-  max-width: 420px;
-  overflow-wrap: anywhere;
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden;
   line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tile-diagnostics-status,
 .tile-diagnostics-timing {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tile-diagnostics-status > span,
+.tile-diagnostics-timing > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tile-diagnostics-status.success {

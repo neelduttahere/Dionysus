@@ -1,4 +1,4 @@
-import { GearIcon, TimerIcon } from '@radix-ui/react-icons'
+import { GearIcon } from '@radix-ui/react-icons'
 import { Button, Popover, Spinner, Tooltip } from '@radix-ui/themes'
 import { TileDiagnosticsPanel } from '@/components/map/diagnostics/TileDiagnosticsPanel'
 import type { TileRequestRecord } from '@/types/tileDiagnostics'
@@ -29,7 +29,7 @@ export function TileDiagnosticsButton({
               aria-label="Open tile diagnostics"
               className="tile-diagnostics-trigger"
             >
-              <TimerIcon />
+              <GearIcon />
               Tile Diagnostics
               {hasPendingRequests ? <Spinner size="1" /> : null}
             </Button>

@@ -3,7 +3,7 @@ import {
   CrossCircledIcon,
   StopwatchIcon,
 } from '@radix-ui/react-icons'
-import { Flex, Spinner, Table, Text } from '@radix-ui/themes'
+import { Flex, Spinner, Table, Text, Tooltip } from '@radix-ui/themes'
 import type { TileRequestRecord } from '@/types/tileDiagnostics'
 import {
   formatTileRequestDuration,
@@ -29,23 +29,31 @@ export function TileDiagnosticsTable({ records }: TileDiagnosticsTableProps) {
     <Table.Root size="1" variant="surface" className="tile-diagnostics-table">
       <Table.Header>
         <Table.Row>
-          <Table.ColumnHeaderCell>Request</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Timing</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell className="tile-diagnostics-request-column">
+            Request
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell className="tile-diagnostics-status-column">
+            Status
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell className="tile-diagnostics-timing-column">
+            Timing
+          </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {records.map((record) => (
           <Table.Row key={record.id}>
-            <Table.Cell>
-              <Text size="1" className="tile-diagnostics-url">
-                {record.url}
-              </Text>
+            <Table.Cell className="tile-diagnostics-request-column">
+              <Tooltip content={record.url}>
+                <Text size="1" className="tile-diagnostics-url">
+                  {record.url}
+                </Text>
+              </Tooltip>
             </Table.Cell>
-            <Table.Cell>
+            <Table.Cell className="tile-diagnostics-status-column">
               <TileRequestStatus record={record} />
             </Table.Cell>
-            <Table.Cell>
+            <Table.Cell className="tile-diagnostics-timing-column">
               <Flex align="center" gap="1" className="tile-diagnostics-timing">
                 <StopwatchIcon />
                 <Text size="1">{formatTileRequestDuration(record)}</Text>

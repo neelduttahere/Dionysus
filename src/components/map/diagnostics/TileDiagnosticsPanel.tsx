@@ -49,7 +49,7 @@ export function TileDiagnosticsPanel({
 
       <ScrollArea
         className="tile-diagnostics-scroll"
-        scrollbars="both"
+        scrollbars="vertical"
         type="hover"
       >
         <TileDiagnosticsTable records={records} />
