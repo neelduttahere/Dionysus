@@ -20,6 +20,7 @@ import {
 import { useState } from 'react'
 import { ExpressionRenderControls } from '@/components/composer/render-controls/ExpressionRenderControls'
 import { SingleBandRenderControls } from '@/components/composer/render-controls/SingleBandRenderControls'
+import { StacUrlHelpDialog } from '@/components/composer/stac-help/StacUrlHelpDialog'
 import { formatTimelineDate } from '@/components/composer/timeline/formatTimelineDate'
 import { TimelineItemDetails } from '@/components/composer/timeline/TimelineItemDetails'
 import { FieldLabelWithInfo } from '@/components/ui/FieldLabelWithInfo'
@@ -219,9 +220,12 @@ function ComposerInstanceEditor({
         {label}
       </Heading>
       <div className="field">
-        <Text size="2" weight="medium">
-          STAC URLs
-        </Text>
+        <Flex align="center" justify="between" gap="3">
+          <Text size="2" weight="medium">
+            STAC URLs
+          </Text>
+          <StacUrlHelpDialog />
+        </Flex>
         <TextArea
           aria-label="STAC URLs"
           value={draftUrls}

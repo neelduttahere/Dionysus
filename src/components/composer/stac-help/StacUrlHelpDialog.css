@@ -1,0 +1,39 @@
+.stac-help-separator {
+  margin: var(--space-4) 0;
+}
+
+.stac-help-scroll {
+  height: min(560px, calc(100vh - 240px));
+  max-height: min(560px, calc(100vh - 240px));
+}
+
+.stac-help-scroll :where(.rt-ScrollAreaViewport) {
+  height: min(560px, calc(100vh - 240px));
+  max-height: min(560px, calc(100vh - 240px));
+}
+
+.stac-help-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.stac-help-success {
+  color: var(--green-11);
+}
+
+.stac-help-error {
+  color: var(--red-11);
+}
+
+.stac-help-info {
+  color: var(--blue-11);
+}
+
+.stac-help-url {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--gray-11);
+}
