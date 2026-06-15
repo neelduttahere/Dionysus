@@ -46,6 +46,7 @@ Pages demo is planned, but not enabled yet.
 - Render single-band assets with TiTiler statistics-based contrast.
 - Compute TiTiler band expressions and apply matplotlib colormaps.
 - Compare two scenes or render configurations with swipe mode.
+- Inspect TiTiler tile request health with the map diagnostics panel.
 - Configure a local or remote TiTiler endpoint from the UI.
 - Use OpenStreetMap or a custom XYZ basemap URL.
 - Share composer state through `/map/compose`.
@@ -61,6 +62,7 @@ STAC Item URL(s)
     -> Dionysus extracts assets, dates, bands, geometry, and area
     -> TiTiler creates statistics and TileJSON responses
     -> MapLibre renders raster tiles on the map
+    -> tile diagnostics records TiTiler /tiles request status and timing
 ```
 
 For local Docker usage, `docker compose` starts:
@@ -161,6 +163,26 @@ VITE_BASE_PATH=/
    - `Single band`
    - `Expression`
 8. Use `Swipe` mode to configure left and right scenes independently.
+9. Open `Tile Diagnostics` from the top-right map control to inspect TiTiler
+   tile requests.
+
+### Tile Diagnostics
+
+Tile rendering can be slow when TiTiler is reading large Cloud Optimized
+GeoTIFFs, computing expression tiles, or fetching remote STAC assets. Dionysus
+includes a diagnostics panel for the raster tile requests made by the map.
+
+The diagnostics panel shows:
+
+- full TiTiler `/tiles` request URLs
+- pending tile requests
+- successful tile requests
+- cancelled tile requests
+- failed tile requests and error status
+- request timing
+
+Use `Clear` to reset the diagnostics list while testing a new scene, render
+mode, expression, basemap position, or TiTiler endpoint.
 
 ## Demo Data
 
@@ -265,6 +287,7 @@ Current v1 scope:
 - default visual rendering
 - single-band rendering
 - expression rendering
+- tile diagnostics
 - timeline navigation
 - swipe compare
 - custom TiTiler endpoint
