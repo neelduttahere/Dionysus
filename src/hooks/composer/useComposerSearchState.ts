@@ -7,7 +7,10 @@ export function useComposerSearchState(state: ComposerState) {
 
   function setState(nextState: ComposerState) {
     void navigate({
-      search: toComposerSearch(nextState),
+      search: (previousSearch) => ({
+        ...previousSearch,
+        ...toComposerSearch(nextState),
+      }),
       replace: true,
     })
   }

@@ -1,0 +1,8 @@
+.share-view-callout {
+  margin: var(--space-4) 0;
+}
+
+.share-view-field {
+  flex: 1;
+  min-width: 0;
+}

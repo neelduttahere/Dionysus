@@ -79,6 +79,12 @@
   text-transform: uppercase;
 }
 
+.floating-panel-header-actions {
+  display: inline-flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
 @media (max-width: 760px) {
   .floating-panel {
     right: 12px;

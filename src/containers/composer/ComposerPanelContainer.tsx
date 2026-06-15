@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ComposerPanel } from '@/components/composer/ComposerPanel'
 import { useLoadStacItems } from '@/hooks/api/useLoadStacItems'
 import { useParsedStacItems } from '@/hooks/api/useParsedStacItems'
@@ -12,6 +12,7 @@ interface ComposerPanelContainerProps {
   areaUnit: AreaUnit
   isComputingRasterStatistics: boolean
   onFitBounds: (bbox: BBox) => void
+  shouldFitInitialItems: boolean
 }
 
 export function ComposerPanelContainer({
@@ -19,6 +20,7 @@ export function ComposerPanelContainer({
   areaUnit,
   isComputingRasterStatistics,
   onFitBounds,
+  shouldFitInitialItems,
 }: ComposerPanelContainerProps) {
   const composerSearch = useComposerSearchState(state)
   const loadStacItems = useLoadStacItems()
@@ -29,6 +31,33 @@ export function ComposerPanelContainer({
     null,
   )
   const [loadError, setLoadError] = useState<string | null>(null)
+  const initialFitKeyRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!shouldFitInitialItems) {
+      return
+    }
+
+    const initialFit = getInitialFitBounds(state, singleItems.data, leftItems.data, rightItems.data)
+
+    if (!initialFit) {
+      return
+    }
+
+    if (initialFitKeyRef.current === initialFit.key) {
+      return
+    }
+
+    initialFitKeyRef.current = initialFit.key
+    onFitBounds(initialFit.bbox)
+  }, [
+    shouldFitInitialItems,
+    state,
+    singleItems.data,
+    leftItems.data,
+    rightItems.data,
+    onFitBounds,
+  ])
 
   async function loadUrls(side: 'single' | 'left' | 'right', urls: string[]) {
     setLoadError(null)
@@ -98,6 +127,66 @@ export function ComposerPanelContainer({
       loadingSide={loadingSide}
       loadError={loadError}
     />
+  )
+}
+
+function getInitialFitBounds(
+  state: ComposerState,
+  singleItems: ReturnType<typeof useParsedStacItems>['data'],
+  leftItems: ReturnType<typeof useParsedStacItems>['data'],
+  rightItems: ReturnType<typeof useParsedStacItems>['data'],
+): { key: string; bbox: BBox } | null {
+  if (state.mode === 'single') {
+    const activeSingleItem = findActiveItem(singleItems, state.single.activeItemId)
+
+    if (!activeSingleItem?.bbox) {
+      return null
+    }
+
+    return {
+      key: `single:${activeSingleItem.url}`,
+      bbox: activeSingleItem.bbox,
+    }
+  }
+
+  const activeLeftItem = findActiveItem(leftItems, state.left.activeItemId)
+  const activeRightItem = findActiveItem(rightItems, state.right.activeItemId)
+  const bboxes = [activeLeftItem?.bbox, activeRightItem?.bbox].filter(isBBox)
+
+  if (bboxes.length === 0) {
+    return null
+  }
+
+  return {
+    key: `swipe:${activeLeftItem?.url ?? 'none'}:${activeRightItem?.url ?? 'none'}`,
+    bbox: mergeBBoxes(bboxes),
+  }
+}
+
+function findActiveItem(
+  items: ReturnType<typeof useParsedStacItems>['data'],
+  activeItemId: string | null,
+) {
+  if (!items || items.length === 0) {
+    return null
+  }
+
+  return items.find((item) => item.url === activeItemId) ?? items[0]
+}
+
+function isBBox(bbox: BBox | null | undefined): bbox is BBox {
+  return Array.isArray(bbox) && bbox.length === 4
+}
+
+function mergeBBoxes(bboxes: BBox[]): BBox {
+  return bboxes.reduce<BBox>(
+    (merged, bbox) => [
+      Math.min(merged[0], bbox[0]),
+      Math.min(merged[1], bbox[1]),
+      Math.max(merged[2], bbox[2]),
+      Math.max(merged[3], bbox[3]),
+    ],
+    bboxes[0],
   )
 }
 

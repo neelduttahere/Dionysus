@@ -22,6 +22,7 @@ interface MapCanvasProps {
   swipePosition: number
   onSwipePositionChange: (swipePosition: number) => void
   onViewStateChange: (viewState: MapViewState) => void
+  onViewStateCommit: (viewState: MapViewState) => void
   onCursorMove: (coordinates: { longitude: number; latitude: number }) => void
 }
 
@@ -35,6 +36,7 @@ export function MapCanvas({
   swipePosition,
   onSwipePositionChange,
   onViewStateChange,
+  onViewStateCommit,
   onCursorMove,
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -59,6 +61,9 @@ export function MapCanvas({
         mapStyle={mapStyle}
         attributionControl={false}
         onMove={(event: ViewStateChangeEvent) => onViewStateChange(event.viewState)}
+        onMoveEnd={(event: ViewStateChangeEvent) =>
+          onViewStateCommit(event.viewState)
+        }
         onMouseMove={(event) =>
           onCursorMove({
             longitude: event.lngLat.lng,

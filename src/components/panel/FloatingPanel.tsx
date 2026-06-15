@@ -7,6 +7,7 @@ import {
 import { IconButton, ScrollArea, Text, Tooltip } from '@radix-ui/themes'
 import { Link } from '@tanstack/react-router'
 import { type ReactNode, useState } from 'react'
+import { ShareViewDialog } from '@/components/panel/ShareViewDialog'
 import './FloatingPanel.css'
 
 interface FloatingPanelProps {
@@ -57,21 +58,22 @@ export function FloatingPanel({ activePanel, children }: FloatingPanelProps) {
           <Text asChild size="1" weight="bold" className="floating-panel-kicker">
             <Link to="/">Dionysus</Link>
           </Text>
-          <Tooltip content="Collapse sidebar">
-            <IconButton
-              size="1"
-              variant="outline"
-              aria-label="Collapse sidebar"
-              onClick={() => setIsCollapsed(true)}
-            >
-              <ChevronLeftIcon />
-            </IconButton>
-          </Tooltip>
+          <div className="floating-panel-header-actions">
+            <ShareViewDialog />
+            <Tooltip content="Collapse sidebar">
+              <IconButton
+                size="1"
+                variant="ghost"
+                aria-label="Collapse sidebar"
+                onClick={() => setIsCollapsed(true)}
+              >
+                <ChevronLeftIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
         </div>
         <ScrollArea className="floating-panel-scroll" scrollbars="vertical" type="hover">
-          <div className="floating-panel-content">
-            {children}
-          </div>
+          <div className="floating-panel-content">{children}</div>
         </ScrollArea>
       </section>
     </aside>

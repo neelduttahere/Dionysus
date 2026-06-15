@@ -20,19 +20,27 @@ import './MapShellContainer.css'
 interface MapShellContainerProps {
   activePanel: 'compose' | 'settings'
   composerState?: ComposerState
+  initialMapViewState?: MapViewState | null
+  hasMapViewSearch?: boolean
+  onMapViewStateCommit?: (viewState: MapViewState) => void
 }
 
 export function MapShellContainer({
   activePanel,
   composerState = defaultComposerState,
+  initialMapViewState = null,
+  hasMapViewSearch = false,
+  onMapViewStateCommit,
 }: MapShellContainerProps) {
   const [preferences, setPreferences, resetPreferences] = useAppPreferences()
   const tileDiagnostics = useTileDiagnostics()
-  const [viewState, setViewState] = useState<MapViewState>({
-    longitude: 78.9629,
-    latitude: 20.5937,
-    zoom: 4,
-  })
+  const [viewState, setViewState] = useState<MapViewState>(
+    initialMapViewState ?? {
+      longitude: 78.9629,
+      latitude: 20.5937,
+      zoom: 4,
+    },
+  )
   const [cursor, setCursor] = useState<{ longitude: number; latitude: number } | null>(
     null,
   )
@@ -77,11 +85,23 @@ export function MapShellContainer({
       },
     )
 
-    setViewState({
+    const nextViewState = {
       longitude: fittedViewState.longitude,
       latitude: fittedViewState.latitude,
       zoom: Math.min(fittedViewState.zoom, 14),
-    })
+    }
+
+    setViewState(nextViewState)
+    onMapViewStateCommit?.(nextViewState)
+  }
+
+  function updateViewState(nextViewState: MapViewState) {
+    setViewState(nextViewState)
+  }
+
+  function commitViewState(nextViewState: MapViewState) {
+    setViewState(nextViewState)
+    onMapViewStateCommit?.(nextViewState)
   }
 
   return (
@@ -101,7 +121,8 @@ export function MapShellContainer({
         isSwipeMode={shouldShowSwipeMap}
         swipePosition={swipePosition}
         onSwipePositionChange={setSwipePosition}
-        onViewStateChange={setViewState}
+        onViewStateChange={updateViewState}
+        onViewStateCommit={commitViewState}
         onCursorMove={setCursor}
       />
       <TileDiagnosticsButton
@@ -121,6 +142,7 @@ export function MapShellContainer({
                 : singleRaster.isComputingStatistics
             }
             onFitBounds={fitBounds}
+            shouldFitInitialItems={!hasMapViewSearch}
           />
         ) : (
           <SettingsPanelContainer
@@ -135,16 +157,28 @@ export function MapShellContainer({
         cursor={cursor}
         onPreferencesChange={setPreferences}
         onZoomIn={() =>
-          setViewState((currentViewState) => ({
+          setViewState((currentViewState) => {
+            const nextViewState = {
             ...currentViewState,
             zoom: Math.min(currentViewState.zoom + 1, 22),
-          }))
+            }
+
+            onMapViewStateCommit?.(nextViewState)
+
+            return nextViewState
+          })
         }
         onZoomOut={() =>
-          setViewState((currentViewState) => ({
+          setViewState((currentViewState) => {
+            const nextViewState = {
             ...currentViewState,
             zoom: Math.max(currentViewState.zoom - 1, 0),
-          }))
+            }
+
+            onMapViewStateCommit?.(nextViewState)
+
+            return nextViewState
+          })
         }
       />
     </main>
