@@ -1,7 +1,6 @@
 import {
   CalendarIcon,
   ClockIcon,
-  CopyIcon,
   InfoCircledIcon,
   MixerVerticalIcon,
 } from '@radix-ui/react-icons'
@@ -160,7 +159,6 @@ function ComposerInstanceEditor({
   onChange,
 }: ComposerInstanceEditorProps) {
   const [draftUrls, setDraftUrls] = useState(instance.urls.join(', '))
-  const [alert, setAlert] = useState<string | null>(null)
   const activeIndex = Math.max(0, instance.urls.indexOf(instance.activeItemId ?? ''))
   const activeItem =
     timelineItems.find((item) => item.url === instance.activeItemId) ??
@@ -405,26 +403,6 @@ function ComposerInstanceEditor({
               />
             ) : null}
           </div>
-
-          <Button
-            type="button"
-            variant="surface"
-            onClick={() =>
-              setAlert('Copy config validation will be enabled with STAC parsing.')
-            }
-          >
-            <CopyIcon />
-            Copy config
-          </Button>
-
-          {alert ? (
-            <Callout.Root color="amber" variant="surface">
-              <Callout.Icon>
-                <InfoCircledIcon />
-              </Callout.Icon>
-              <Callout.Text>{alert}</Callout.Text>
-            </Callout.Root>
-          ) : null}
         </>
       )}
     </section>
