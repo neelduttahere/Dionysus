@@ -44,12 +44,16 @@ Pages demo is planned, but not enabled yet.
 - Render one active scene at a time.
 - Inspect scene metadata, constellation/platform, band count, and footprint area.
 - Render single-band assets with TiTiler statistics-based contrast.
-- Compute TiTiler band expressions and apply matplotlib colormaps.
+- Compute TiTiler band expressions and apply alphabetically sorted matplotlib
+  colormaps.
 - Compare two scenes or render configurations with swipe mode.
 - Inspect TiTiler tile request health with the map diagnostics panel.
+- Review STAC compatibility guidance for CORS, requester-pays assets, and signed
+  asset catalogs.
+- Share the current composer, render, swipe, map center, and zoom state with a
+  copyable link.
 - Configure a local or remote TiTiler endpoint from the UI.
 - Use OpenStreetMap or a custom XYZ basemap URL.
-- Share composer state through `/map/compose`.
 
 ## What Is Underneath
 
