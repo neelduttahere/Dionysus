@@ -15,7 +15,7 @@ function RootLayout() {
   useSystemThemeClass()
 
   return (
-    <Theme accentColor="iris" grayColor="auto" panelBackground="solid" radius="small">
+    <Theme accentColor="iris" grayColor="auto" panelBackground="solid" radius="medium">
       <Outlet />
     </Theme>
   )
