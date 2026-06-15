@@ -53,23 +53,23 @@ export function FloatingPanel({ activePanel, children }: FloatingPanelProps) {
         aria-label="Panel content"
         aria-hidden={isCollapsed}
       >
+        <div className="floating-panel-header">
+          <Text asChild size="1" weight="bold" className="floating-panel-kicker">
+            <Link to="/">Dionysus</Link>
+          </Text>
+          <Tooltip content="Collapse sidebar">
+            <IconButton
+              size="1"
+              variant="outline"
+              aria-label="Collapse sidebar"
+              onClick={() => setIsCollapsed(true)}
+            >
+              <ChevronLeftIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
         <ScrollArea className="floating-panel-scroll" scrollbars="vertical" type="hover">
           <div className="floating-panel-content">
-            <div className="floating-panel-header">
-              <Text asChild size="1" weight="bold" className="floating-panel-kicker">
-                <Link to="/">Dionysus</Link>
-              </Text>
-              <Tooltip content="Collapse sidebar">
-                <IconButton
-                  size="1"
-                  variant="outline"
-                  aria-label="Collapse sidebar"
-                  onClick={() => setIsCollapsed(true)}
-                >
-                  <ChevronLeftIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
             {children}
           </div>
         </ScrollArea>
