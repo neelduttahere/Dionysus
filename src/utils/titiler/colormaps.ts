@@ -87,4 +87,8 @@ const MATPLOTLIB_COLORMAPS = [
 export const TITILER_COLORMAPS = [
   ...MATPLOTLIB_COLORMAPS,
   ...MATPLOTLIB_COLORMAPS.map((colormap) => `${colormap}_r`),
-] as const
+].sort((firstColormap, secondColormap) =>
+  firstColormap.localeCompare(secondColormap, undefined, {
+    sensitivity: 'base',
+  }),
+)
