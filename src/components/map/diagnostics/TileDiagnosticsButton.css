@@ -1,0 +1,7 @@
+.map-tools-top {
+  top: 22px;
+}
+
+.tile-diagnostics-trigger {
+  gap: var(--space-1);
+}

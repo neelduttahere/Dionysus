@@ -1,0 +1,53 @@
+.tile-diagnostics-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.tile-diagnostics-intro {
+  margin: var(--space-1) 0 0;
+}
+
+.tile-diagnostics-summary {
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--gray-a5);
+}
+
+.tile-diagnostics-scroll {
+  width: 100%;
+  height: min(420px, calc(100vh - 180px));
+}
+
+.tile-diagnostics-table {
+  min-width: 680px;
+}
+
+.tile-diagnostics-empty {
+  min-height: 180px;
+  padding: var(--space-4);
+}
+
+.tile-diagnostics-url {
+  display: block;
+  max-width: 420px;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
+.tile-diagnostics-status,
+.tile-diagnostics-timing {
+  white-space: nowrap;
+}
+
+.tile-diagnostics-status.success {
+  color: var(--green-11);
+}
+
+.tile-diagnostics-status.error {
+  color: var(--red-11);
+}
+
+.tile-diagnostics-status.pending {
+  color: var(--amber-11);
+}

@@ -1,6 +1,7 @@
 import { WebMercatorViewport } from '@deck.gl/core'
 import { useState } from 'react'
 import type { StacStatisticsResponse, StatisticsBand } from '@/api/titiler/endpoints'
+import { TileDiagnosticsButton } from '@/components/map/diagnostics/TileDiagnosticsButton'
 import { MapCanvas, type MapViewState } from '@/components/map/MapCanvas'
 import { RightMapControls } from '@/components/map/RightMapControls'
 import { FloatingPanel } from '@/components/panel/FloatingPanel'
@@ -8,6 +9,7 @@ import { ComposerPanelContainer } from '@/containers/composer/ComposerPanelConta
 import { SettingsPanelContainer } from '@/containers/settings/SettingsPanelContainer'
 import { useStacAssetStatistics } from '@/hooks/api/useStacAssetStatistics'
 import { useStacTileJson } from '@/hooks/api/useStacTileJson'
+import { useTileDiagnostics } from '@/hooks/map/useTileDiagnostics'
 import { useAppPreferences } from '@/hooks/preferences/useAppPreferences'
 import type { ComposerInstanceState, ComposerState } from '@/types/composer'
 import type { BBox } from '@/utils/geo/bbox'
@@ -25,6 +27,7 @@ export function MapShellContainer({
   composerState = defaultComposerState,
 }: MapShellContainerProps) {
   const [preferences, setPreferences, resetPreferences] = useAppPreferences()
+  const tileDiagnostics = useTileDiagnostics()
   const [viewState, setViewState] = useState<MapViewState>({
     longitude: 78.9629,
     latitude: 20.5937,
@@ -86,14 +89,25 @@ export function MapShellContainer({
       <MapCanvas
         preferences={preferences}
         viewState={viewState}
-        rasterTileUrl={shouldShowSwipeMap ? null : singleRaster.tileUrl}
-        leftRasterTileUrl={shouldShowSwipeMap ? leftRaster.tileUrl : null}
-        rightRasterTileUrl={shouldShowSwipeMap ? rightRaster.tileUrl : null}
+        rasterTileUrl={
+          shouldShowSwipeMap ? null : wrapTileUrl(tileDiagnostics, singleRaster.tileUrl)
+        }
+        leftRasterTileUrl={
+          shouldShowSwipeMap ? wrapTileUrl(tileDiagnostics, leftRaster.tileUrl) : null
+        }
+        rightRasterTileUrl={
+          shouldShowSwipeMap ? wrapTileUrl(tileDiagnostics, rightRaster.tileUrl) : null
+        }
         isSwipeMode={shouldShowSwipeMap}
         swipePosition={swipePosition}
         onSwipePositionChange={setSwipePosition}
         onViewStateChange={setViewState}
         onCursorMove={setCursor}
+      />
+      <TileDiagnosticsButton
+        records={tileDiagnostics.records}
+        hasPendingRequests={tileDiagnostics.hasPendingRequests}
+        onClear={tileDiagnostics.clearAllRecords}
       />
       <FloatingPanel activePanel={activePanel}>
         {activePanel === 'compose' ? (
@@ -135,6 +149,13 @@ export function MapShellContainer({
       />
     </main>
   )
+}
+
+function wrapTileUrl(
+  tileDiagnostics: ReturnType<typeof useTileDiagnostics>,
+  tileUrl: string | null,
+) {
+  return tileUrl ? tileDiagnostics.wrapTileUrl(tileUrl) : null
 }
 
 function useComposerRaster({
