@@ -186,15 +186,23 @@ mode, expression, basemap position, or TiTiler endpoint.
 
 ## Demo Data
 
-Use these public Element 84 Sentinel-2 L2A STAC items to try Dionysus.
+Use these public Element 84 Sentinel-2 L2A STAC items around New York City to
+try Dionysus.
 
 ```text
-https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_43RGM_20240131_0_L2A,
-https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_44RKS_20240131_0_L2A,
-https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_43RGN_20240131_0_L2A,
-https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_44RKT_20240131_0_L2A,
-https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_43RFL_20240129_0_L2A,
-https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_43RGL_20240129_0_L2A
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_18TXK_20240921_0_L2A,
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_18TWK_20240913_0_L2A,
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_18TXK_20240913_0_L2A,
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_18TWL_20240913_0_L2A,
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2A_18TXL_20240913_0_L2A,
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_18TWK_20240911_0_L2A,
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_18TXK_20240908_0_L2A
+```
+
+Best first scene test:
+
+```text
+https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items/S2B_18TXK_20240908_0_L2A
 ```
 
 Sentinel-2 L2A expression examples using Element 84 asset names:
