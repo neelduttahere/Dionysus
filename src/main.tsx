@@ -6,9 +6,14 @@ import { routeTree } from './routeTree.gen'
 import './index.css'
 
 const queryClient = new QueryClient()
+const basepath =
+  import.meta.env.BASE_URL === '/'
+    ? '/'
+    : import.meta.env.BASE_URL.replace(/\/$/, '')
 
 const router = createRouter({
   routeTree,
+  basepath,
   context: {
     queryClient,
   },

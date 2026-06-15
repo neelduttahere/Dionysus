@@ -264,6 +264,31 @@ pnpm format
 pnpm preview
 ```
 
+## GitHub Pages Deployment
+
+Dionysus can be deployed as a static GitHub Pages project site. Deployment is
+coupled to GitHub Releases: publishing a release triggers the Pages workflow.
+Pushes to `master` do not deploy automatically.
+
+The Pages workflow builds with:
+
+```text
+VITE_BASE_PATH=/Dionysus/
+VITE_DEFAULT_TITILER_URL=https://titiler.xyz
+```
+
+The build also copies `dist/index.html` to `dist/404.html` so direct visits and
+refreshes on routes such as `/Dionysus/map/compose` can boot the React app.
+Unknown app routes render Dionysus' app-level not-found view.
+
+Before publishing a release, run:
+
+```bash
+pnpm check
+VITE_BASE_PATH=/Dionysus/ VITE_DEFAULT_TITILER_URL=https://titiler.xyz pnpm build
+cp dist/index.html dist/404.html
+```
+
 ## Project Structure
 
 ```text

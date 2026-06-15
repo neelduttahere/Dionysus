@@ -1,0 +1,53 @@
+.not-found-page {
+  display: grid;
+  width: 100%;
+  min-height: 100%;
+  place-items: center;
+  padding: var(--space-6);
+  background:
+    linear-gradient(135deg, var(--gray-a2), var(--iris-a3)),
+    var(--color-background);
+}
+
+.not-found-content {
+  width: min(680px, 100%);
+  padding: var(--space-7);
+  border: 1px solid var(--gray-a5);
+  border-radius: var(--radius-5);
+  background: var(--color-panel-solid);
+  box-shadow: var(--shadow-5);
+}
+
+.not-found-mark {
+  display: grid;
+  width: var(--space-8);
+  height: var(--space-8);
+  margin-bottom: var(--space-5);
+  place-items: center;
+  border-radius: var(--radius-3);
+  background: var(--accent-9);
+  color: var(--accent-contrast);
+}
+
+.not-found-mark svg {
+  width: var(--space-5);
+  height: var(--space-5);
+}
+
+.not-found-kicker {
+  display: block;
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+}
+
+.not-found-description {
+  max-width: 560px;
+  margin: var(--space-4) 0 0;
+}
+
+.not-found-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
