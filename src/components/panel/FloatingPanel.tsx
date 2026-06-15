@@ -1,7 +1,12 @@
-import { GearIcon, ImageIcon } from '@radix-ui/react-icons'
-import { Button, IconButton, ScrollArea, Text } from '@radix-ui/themes'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  GearIcon,
+  ImageIcon,
+} from '@radix-ui/react-icons'
+import { IconButton, ScrollArea, Text, Tooltip } from '@radix-ui/themes'
 import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import './FloatingPanel.css'
 
 interface FloatingPanelProps {
@@ -10,8 +15,15 @@ interface FloatingPanelProps {
 }
 
 export function FloatingPanel({ activePanel, children }: FloatingPanelProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
   return (
-    <aside className="floating-panel" aria-label="Map workspace panel">
+    <aside
+      className={
+        isCollapsed ? 'floating-panel floating-panel-collapsed' : 'floating-panel'
+      }
+      aria-label="Map workspace panel"
+    >
       <nav className="floating-panel-sidebar" aria-label="Panel routes">
         <IconButton asChild variant={activePanel === 'compose' ? 'solid' : 'ghost'}>
           <Link to="/map/compose" aria-label="Composer">
@@ -23,17 +35,40 @@ export function FloatingPanel({ activePanel, children }: FloatingPanelProps) {
             <GearIcon />
           </Link>
         </IconButton>
+        {isCollapsed ? (
+          <Tooltip content="Expand sidebar">
+            <IconButton
+              size="3"
+              variant="ghost"
+              aria-label="Expand sidebar"
+              onClick={() => setIsCollapsed(false)}
+            >
+              <ChevronRightIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
       </nav>
-      <section className="floating-panel-body" aria-label="Panel content">
+      <section
+        className="floating-panel-body"
+        aria-label="Panel content"
+        aria-hidden={isCollapsed}
+      >
         <ScrollArea className="floating-panel-scroll" scrollbars="vertical" type="hover">
           <div className="floating-panel-content">
             <div className="floating-panel-header">
-              <Text size="1" weight="bold" className="floating-panel-kicker">
-                Dionysus
+              <Text asChild size="1" weight="bold" className="floating-panel-kicker">
+                <Link to="/">Dionysus</Link>
               </Text>
-              <Button asChild size="1" variant="ghost">
-                <Link to="/">Home</Link>
-              </Button>
+              <Tooltip content="Collapse sidebar">
+                <IconButton
+                  size="1"
+                  variant="outline"
+                  aria-label="Collapse sidebar"
+                  onClick={() => setIsCollapsed(true)}
+                >
+                  <ChevronLeftIcon />
+                </IconButton>
+              </Tooltip>
             </div>
             {children}
           </div>
