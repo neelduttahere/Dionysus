@@ -15,6 +15,11 @@
   backdrop-filter: var(--backdrop-filter-panel);
 }
 
+.dark .floating-panel {
+  background: color-mix(in srgb, var(--gray-1) 88%, transparent);
+  border-color: var(--gray-a7);
+}
+
 .floating-panel-collapsed {
   grid-template-columns: 48px;
 }
@@ -62,6 +67,11 @@
   padding: var(--space-3) var(--space-4);
   background: var(--color-panel);
   border-bottom: 1px solid var(--gray-a4);
+}
+
+.dark .floating-panel-header {
+  background: color-mix(in srgb, var(--gray-1) 28%, transparent);
+  border-bottom-color: var(--gray-a6);
 }
 
 .floating-panel-kicker {

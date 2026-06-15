@@ -27,7 +27,7 @@ export function TileDiagnosticsButton({
               variant="solid"
               size="2"
               aria-label="Open tile diagnostics"
-              className="tile-diagnostics-trigger"
+              className="tile-diagnostics-trigger map-overlay-control"
             >
               <GearIcon />
               Tile Diagnostics

@@ -18,9 +18,9 @@ function RootLayout() {
 
   return (
     <Theme
-      accentColor="violet"
-      grayColor="mauve"
-      panelBackground="solid"
+      accentColor="iris"
+      grayColor="slate"
+      panelBackground="translucent"
       radius="medium"
       scaling="95%"
     >

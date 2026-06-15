@@ -38,19 +38,36 @@ export function RightMapControls({
     <fieldset className="map-tools map-tools-bottom">
       <legend className="sr-only">Map tools</legend>
       <Tooltip content="Zoom in">
-        <IconButton variant="solid" size="3" aria-label="Zoom in" onClick={onZoomIn}>
+        <IconButton
+          variant="solid"
+          size="3"
+          aria-label="Zoom in"
+          className="map-overlay-control"
+          onClick={onZoomIn}
+        >
           <PlusIcon />
         </IconButton>
       </Tooltip>
       <Tooltip content="Zoom out">
-        <IconButton variant="solid" size="3" aria-label="Zoom out" onClick={onZoomOut}>
+        <IconButton
+          variant="solid"
+          size="3"
+          aria-label="Zoom out"
+          className="map-overlay-control"
+          onClick={onZoomOut}
+        >
           <MinusIcon />
         </IconButton>
       </Tooltip>
       <Popover.Root>
         <Tooltip content="Basemap">
           <Popover.Trigger>
-            <IconButton variant="solid" size="3" aria-label="Basemap switcher">
+            <IconButton
+              variant="solid"
+              size="3"
+              aria-label="Basemap switcher"
+              className="map-overlay-control"
+            >
               <LayersIcon />
             </IconButton>
           </Popover.Trigger>
@@ -92,7 +109,13 @@ export function RightMapControls({
         </Popover.Content>
       </Popover.Root>
       <Tooltip content="Settings">
-        <IconButton asChild variant="solid" size="3" aria-label="Settings">
+        <IconButton
+          asChild
+          variant="solid"
+          size="3"
+          aria-label="Settings"
+          className="map-overlay-control"
+        >
           <Link to="/map/settings">
             <GearIcon />
           </Link>
@@ -100,7 +123,9 @@ export function RightMapControls({
       </Tooltip>
       <div className="cursor-readout">
         <TargetIcon />
-        <span>{formatCursor(cursor)}</span>
+        <Text size="2" weight="regular">
+          {formatCursor(cursor)}
+        </Text>
       </div>
     </fieldset>
   )

@@ -4,4 +4,20 @@
 
 .tile-diagnostics-trigger {
   gap: var(--space-1);
+  backdrop-filter: var(--backdrop-filter-panel);
+}
+
+.dark .tile-diagnostics-trigger:is(.rt-Button) {
+  color: #fff;
+  background: rgb(33 32 38 / 88%);
+  border: 1px solid rgb(255 255 255 / 24%);
+  box-shadow: var(--shadow-4);
+}
+
+.dark .tile-diagnostics-trigger:is(.rt-Button):hover {
+  background: rgb(45 44 52 / 92%);
+}
+
+.dark .tile-diagnostics-trigger:is(.rt-Button):active {
+  background: rgb(25 24 30 / 94%);
 }
