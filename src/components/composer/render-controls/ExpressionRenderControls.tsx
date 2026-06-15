@@ -1,4 +1,8 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import {
+  ColorWheelIcon,
+  CursorTextIcon,
+  InfoCircledIcon,
+} from '@radix-ui/react-icons'
 import {
   Button,
   Callout,
@@ -42,6 +46,7 @@ export function ExpressionRenderControls({
           label="Band expression"
           title="Expression rendering"
           description="Enter a TiTiler expression that combines STAC assets, such as (nir-red)/(nir+red). The map keeps showing the visual asset until you compute the expression."
+          icon={<CursorTextIcon />}
           side="right"
           align="center"
         />
@@ -59,6 +64,7 @@ export function ExpressionRenderControls({
             label="Colormap"
             title="Expression colormap"
             description="Choose the color ramp TiTiler applies to the computed single-band expression result. Diverging ramps work well for normalized indexes, while sequential ramps are better for intensity-style outputs."
+            icon={<ColorWheelIcon />}
             side="right"
             align="center"
           />

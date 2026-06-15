@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { InfoCircledIcon, StackIcon } from '@radix-ui/react-icons'
 import { Callout, Flex, Select, Spinner, Text } from '@radix-ui/themes'
 import { FieldLabelWithInfo } from '@/components/ui/FieldLabelWithInfo'
 
@@ -36,6 +36,7 @@ export function SingleBandRenderControls({
             label="Band"
             title="Single-band rendering"
             description="Renders one raster asset from the active STAC item, such as red, NIR, SWIR, or scene classification. Dionysus asks TiTiler for raster statistics and applies a contrast stretch so the selected band is easier to inspect on the map."
+            icon={<StackIcon />}
             side="right"
             align="center"
           />

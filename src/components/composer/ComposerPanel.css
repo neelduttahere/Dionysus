@@ -33,6 +33,24 @@
   gap: var(--space-3);
 }
 
+.render-mode-option,
+.render-mode-coming-soon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.render-mode-option {
+  width: 100%;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.render-mode-coming-soon {
+  gap: var(--space-1);
+  color: var(--gray-10);
+  font-size: var(--font-size-1);
+}
+
 .timeline-block {
   display: flex;
   flex-direction: column;

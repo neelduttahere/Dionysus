@@ -1,4 +1,10 @@
-import { CopyIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import {
+  CalendarIcon,
+  ClockIcon,
+  CopyIcon,
+  InfoCircledIcon,
+  MixerVerticalIcon,
+} from '@radix-ui/react-icons'
 import {
   Button,
   Callout,
@@ -17,6 +23,7 @@ import { ExpressionRenderControls } from '@/components/composer/render-controls/
 import { SingleBandRenderControls } from '@/components/composer/render-controls/SingleBandRenderControls'
 import { formatTimelineDate } from '@/components/composer/timeline/formatTimelineDate'
 import { TimelineItemDetails } from '@/components/composer/timeline/TimelineItemDetails'
+import { FieldLabelWithInfo } from '@/components/ui/FieldLabelWithInfo'
 import type {
   ComposerInstanceState,
   ComposerState,
@@ -252,9 +259,14 @@ function ComposerInstanceEditor({
         <>
           <div className="timeline-block">
             <Flex justify="between" align="center">
-              <Text size="2" weight="medium">
-                Timeline
-              </Text>
+              <FieldLabelWithInfo
+                label="Timeline"
+                title="Scene timeline"
+                description="Switch between the loaded STAC items. Items are sorted by acquisition date, and each selection renders one scene at a time for this composer side."
+                icon={<CalendarIcon />}
+                side="right"
+                align="center"
+              />
               <Text size="1" color="gray">
                 {activeIndex + 1} of {instance.urls.length}
               </Text>
@@ -304,9 +316,14 @@ function ComposerInstanceEditor({
 
           <div className="render-controls">
             <div className="field">
-              <Text size="2" weight="medium">
-                Render mode
-              </Text>
+              <FieldLabelWithInfo
+                label="Render mode"
+                title="Imagery render mode"
+                description="Choose how the active STAC item is sent to TiTiler. Default and visual use the scene preview, single band inspects one raster asset, and expression computes a band formula with a colormap."
+                icon={<MixerVerticalIcon />}
+                side="right"
+                align="center"
+              />
               <Select.Root
                 value={activeConfig.mode}
                 onValueChange={(value) => updateRenderMode(value as RenderMode)}
@@ -314,8 +331,24 @@ function ComposerInstanceEditor({
                 <Select.Trigger aria-label="Render mode" />
                 <Select.Content position="popper" side="top">
                   <Select.Item value="default">Default</Select.Item>
-                  <Select.Item value="visual">Visual asset</Select.Item>
-                  <Select.Item value="rgb">RGB composite</Select.Item>
+                  <Select.Item value="visual" disabled>
+                    <span className="render-mode-option">
+                      <span>Force TCI asset</span>
+                      <span className="render-mode-coming-soon">
+                        Coming soon!
+                        <ClockIcon />
+                      </span>
+                    </span>
+                  </Select.Item>
+                  <Select.Item value="rgb" disabled>
+                    <span className="render-mode-option">
+                      <span>RGB composite</span>
+                      <span className="render-mode-coming-soon">
+                        Coming soon!
+                        <ClockIcon />
+                      </span>
+                    </span>
+                  </Select.Item>
                   <Select.Item value="single-band">Single band</Select.Item>
                   <Select.Item value="expression">Expression</Select.Item>
                 </Select.Content>
