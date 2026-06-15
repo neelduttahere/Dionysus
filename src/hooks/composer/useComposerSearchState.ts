@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import type { ComposerInstanceState, ComposerState } from '@/types/composer'
+import type { ComposerInstanceState, ComposerMode, ComposerState } from '@/types/composer'
 import { toComposerSearch } from '@/utils/url/composerSearch'
 
 export function useComposerSearchState(state: ComposerState) {
@@ -26,7 +26,25 @@ export function useComposerSearchState(state: ComposerState) {
     })
   }
 
-  function setMode(mode: ComposerState['mode']) {
+  function setMode(mode: ComposerMode) {
+    if (
+      mode === 'swipe' &&
+      state.single.urls.length > 0 &&
+      !hasComposerInstanceState(state.left) &&
+      !hasComposerInstanceState(state.right)
+    ) {
+      const left = cloneComposerInstance(state.single)
+      const right = cloneComposerInstance(state.single)
+
+      setState({
+        ...state,
+        mode,
+        left,
+        right,
+      })
+      return
+    }
+
     setState({
       ...state,
       mode,
@@ -38,5 +56,23 @@ export function useComposerSearchState(state: ComposerState) {
     updateSingle,
     updateSide,
     setMode,
+  }
+}
+
+function hasComposerInstanceState(instance: ComposerInstanceState): boolean {
+  return (
+    instance.urls.length > 0 ||
+    Boolean(instance.activeItemId) ||
+    Object.keys(instance.configs).length > 0
+  )
+}
+
+function cloneComposerInstance(
+  instance: ComposerInstanceState,
+): ComposerInstanceState {
+  return {
+    urls: [...instance.urls],
+    activeItemId: instance.activeItemId,
+    configs: structuredClone(instance.configs),
   }
 }

@@ -29,7 +29,10 @@ export const defaultComposerState: ComposerState = {
 }
 
 export function encodeComposerState(state: ComposerState): string {
-  return compressToEncodedURIComponent(JSON.stringify(state))
+  const { swipePosition: _swipePosition, ...shareableState } =
+    normalizeComposerState(state)
+
+  return compressToEncodedURIComponent(JSON.stringify(shareableState))
 }
 
 export function decodeComposerState(encodedState: string | undefined): ComposerState {

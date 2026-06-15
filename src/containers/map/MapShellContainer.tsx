@@ -33,41 +33,26 @@ export function MapShellContainer({
   const [cursor, setCursor] = useState<{ longitude: number; latitude: number } | null>(
     null,
   )
-  const activeStacUrl = getActiveStacUrl(composerState)
-  const activeRenderRequest = getActiveRenderRequest(composerState)
-  const activeTileAssets = activeRenderRequest.assets
-  const shouldAutoRescale =
-    activeRenderRequest.kind === 'single-band' ||
-    activeRenderRequest.kind === 'expression'
-  const stacAssetStatistics = useStacAssetStatistics({
+  const [swipePosition, setSwipePosition] = useState(50)
+  const singleRaster = useComposerRaster({
+    instance: composerState.single,
     titilerUrl: preferences.titilerUrl,
-    stacUrl: activeStacUrl,
-    assets: activeTileAssets,
-    expression: activeRenderRequest.expression,
-    assetAsBand: activeRenderRequest.assetAsBand,
-    enabled: shouldAutoRescale,
+    enabled: composerState.mode === 'single',
   })
-  const rescale = shouldAutoRescale
-    ? getStatisticsRescale(stacAssetStatistics.data, activeTileAssets[0])
-    : undefined
-  const fallbackRescale = getFallbackRescale(
-    activeRenderRequest.kind,
-    stacAssetStatistics.isError,
+  const leftRaster = useComposerRaster({
+    instance: composerState.left,
+    titilerUrl: preferences.titilerUrl,
+    enabled: composerState.mode === 'swipe',
+  })
+  const rightRaster = useComposerRaster({
+    instance: composerState.right,
+    titilerUrl: preferences.titilerUrl,
+    enabled: composerState.mode === 'swipe',
+  })
+  const isSwipeMode = composerState.mode === 'swipe'
+  const shouldShowSwipeMap = Boolean(
+    isSwipeMode && (composerState.left.activeItemId || composerState.right.activeItemId),
   )
-  const resolvedRescale = rescale ?? fallbackRescale
-  const canLoadTileJson =
-    !shouldAutoRescale || Boolean(resolvedRescale) || stacAssetStatistics.isError
-  const stacTileJson = useStacTileJson({
-    titilerUrl: preferences.titilerUrl,
-    stacUrl: activeStacUrl,
-    assets: activeTileAssets,
-    rescale: resolvedRescale,
-    expression: activeRenderRequest.expression,
-    colormapName: activeRenderRequest.colormapName,
-    assetAsBand: activeRenderRequest.assetAsBand,
-    enabled: canLoadTileJson,
-  })
-  const rasterTileUrl = canLoadTileJson ? (stacTileJson.data?.tiles[0] ?? null) : null
 
   function fitBounds(bbox: BBox) {
     const viewport = new WebMercatorViewport({
@@ -101,7 +86,12 @@ export function MapShellContainer({
       <MapCanvas
         preferences={preferences}
         viewState={viewState}
-        rasterTileUrl={rasterTileUrl}
+        rasterTileUrl={shouldShowSwipeMap ? null : singleRaster.tileUrl}
+        leftRasterTileUrl={shouldShowSwipeMap ? leftRaster.tileUrl : null}
+        rightRasterTileUrl={shouldShowSwipeMap ? rightRaster.tileUrl : null}
+        isSwipeMode={shouldShowSwipeMap}
+        swipePosition={swipePosition}
+        onSwipePositionChange={setSwipePosition}
         onViewStateChange={setViewState}
         onCursorMove={setCursor}
       />
@@ -111,7 +101,10 @@ export function MapShellContainer({
             state={composerState}
             areaUnit={preferences.areaUnit}
             isComputingRasterStatistics={
-              shouldAutoRescale && stacAssetStatistics.isFetching
+              isSwipeMode
+                ? leftRaster.isComputingStatistics ||
+                  rightRaster.isComputingStatistics
+                : singleRaster.isComputingStatistics
             }
             onFitBounds={fitBounds}
           />
@@ -144,12 +137,53 @@ export function MapShellContainer({
   )
 }
 
-function getActiveStacUrl(composerState: ComposerState): string | null {
-  if (composerState.mode === 'single') {
-    return composerState.single.activeItemId
-  }
+function useComposerRaster({
+  instance,
+  titilerUrl,
+  enabled,
+}: {
+  instance: ComposerInstanceState
+  titilerUrl: string
+  enabled: boolean
+}) {
+  const stacUrl = instance.activeItemId
+  const renderRequest = getInstanceRenderRequest(instance)
+  const tileAssets = renderRequest.assets
+  const shouldAutoRescale =
+    renderRequest.kind === 'single-band' || renderRequest.kind === 'expression'
+  const stacAssetStatistics = useStacAssetStatistics({
+    titilerUrl,
+    stacUrl,
+    assets: tileAssets,
+    expression: renderRequest.expression,
+    assetAsBand: renderRequest.assetAsBand,
+    enabled: enabled && shouldAutoRescale,
+  })
+  const rescale = shouldAutoRescale
+    ? getStatisticsRescale(stacAssetStatistics.data, tileAssets[0])
+    : undefined
+  const fallbackRescale = getFallbackRescale(
+    renderRequest.kind,
+    stacAssetStatistics.isError,
+  )
+  const resolvedRescale = rescale ?? fallbackRescale
+  const canLoadTileJson =
+    !shouldAutoRescale || Boolean(resolvedRescale) || stacAssetStatistics.isError
+  const stacTileJson = useStacTileJson({
+    titilerUrl,
+    stacUrl,
+    assets: tileAssets,
+    rescale: resolvedRescale,
+    expression: renderRequest.expression,
+    colormapName: renderRequest.colormapName,
+    assetAsBand: renderRequest.assetAsBand,
+    enabled: enabled && canLoadTileJson,
+  })
 
-  return composerState.left.activeItemId
+  return {
+    tileUrl: canLoadTileJson ? (stacTileJson.data?.tiles[0] ?? null) : null,
+    isComputingStatistics: shouldAutoRescale && stacAssetStatistics.isFetching,
+  }
 }
 
 interface TileRenderRequest {
@@ -160,8 +194,7 @@ interface TileRenderRequest {
   assetAsBand?: boolean
 }
 
-function getActiveRenderRequest(composerState: ComposerState): TileRenderRequest {
-  const instance = getVisibleComposerInstance(composerState)
+function getInstanceRenderRequest(instance: ComposerInstanceState): TileRenderRequest {
   const activeItemId = instance.activeItemId
 
   if (!activeItemId) {
@@ -195,12 +228,6 @@ function getActiveRenderRequest(composerState: ComposerState): TileRenderRequest
   }
 
   return getVisualRenderRequest()
-}
-
-function getVisibleComposerInstance(
-  composerState: ComposerState,
-): ComposerInstanceState {
-  return composerState.mode === 'single' ? composerState.single : composerState.left
 }
 
 function getVisualRenderRequest(): TileRenderRequest {

@@ -67,7 +67,7 @@ export function ComposerPanelContainer({
         composerSearch.updateSide(side, nextInstance)
       }
 
-      if (firstItem?.bbox) {
+      if (side === 'single' && firstItem?.bbox) {
         onFitBounds(firstItem.bbox)
       }
     } catch (error) {
@@ -89,7 +89,7 @@ export function ComposerPanelContainer({
       onLoadSingleUrls={(urls) => loadUrls('single', urls)}
       onLoadSideUrls={(side, urls) => loadUrls(side, urls)}
       onTimelineItemSelect={(item) => {
-        if (item.bbox) {
+        if (state.mode === 'single' && item.bbox) {
           onFitBounds(item.bbox)
         }
       }}

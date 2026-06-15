@@ -1,5 +1,7 @@
+import { ColumnSpacingIcon } from '@radix-ui/react-icons'
+import { IconButton } from '@radix-ui/themes'
 import maplibregl from 'maplibre-gl'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import MapLibreMap, { type ViewStateChangeEvent } from 'react-map-gl/maplibre'
 import type { AppPreferences } from '@/types/preferences'
 import './MapCanvas.css'
@@ -14,6 +16,11 @@ interface MapCanvasProps {
   preferences: AppPreferences
   viewState: MapViewState
   rasterTileUrl: string | null
+  leftRasterTileUrl: string | null
+  rightRasterTileUrl: string | null
+  isSwipeMode: boolean
+  swipePosition: number
+  onSwipePositionChange: (swipePosition: number) => void
   onViewStateChange: (viewState: MapViewState) => void
   onCursorMove: (coordinates: { longitude: number; latitude: number }) => void
 }
@@ -22,29 +29,120 @@ export function MapCanvas({
   preferences,
   viewState,
   rasterTileUrl,
+  leftRasterTileUrl,
+  rightRasterTileUrl,
+  isSwipeMode,
+  swipePosition,
+  onSwipePositionChange,
   onViewStateChange,
   onCursorMove,
 }: MapCanvasProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const mapStyle = useMemo(
-    () => createRasterStyle(getTileUrl(preferences), rasterTileUrl),
-    [preferences, rasterTileUrl],
+    () => createMapStyle(getTileUrl(preferences), isSwipeMode ? null : rasterTileUrl),
+    [preferences, rasterTileUrl, isSwipeMode],
+  )
+  const leftRasterStyle = useMemo(
+    () => createRasterOnlyStyle(leftRasterTileUrl, 'left'),
+    [leftRasterTileUrl],
+  )
+  const rightRasterStyle = useMemo(
+    () => createRasterOnlyStyle(rightRasterTileUrl, 'right'),
+    [rightRasterTileUrl],
   )
 
   return (
-    <MapLibreMap
-      {...viewState}
-      mapLib={maplibregl}
-      mapStyle={mapStyle}
-      attributionControl={false}
-      onMove={(event: ViewStateChangeEvent) => onViewStateChange(event.viewState)}
-      onMouseMove={(event) =>
-        onCursorMove({
-          longitude: event.lngLat.lng,
-          latitude: event.lngLat.lat,
-        })
-      }
-      reuseMaps
-    />
+    <div className="map-canvas" ref={containerRef}>
+      <MapLibreMap
+        {...viewState}
+        mapLib={maplibregl}
+        mapStyle={mapStyle}
+        attributionControl={false}
+        onMove={(event: ViewStateChangeEvent) => onViewStateChange(event.viewState)}
+        onMouseMove={(event) =>
+          onCursorMove({
+            longitude: event.lngLat.lng,
+            latitude: event.lngLat.lat,
+          })
+        }
+        reuseMaps
+      />
+
+      {isSwipeMode && leftRasterTileUrl ? (
+        <div
+          className="map-canvas-overlay map-canvas-overlay-left"
+          style={{ clipPath: `inset(0 ${100 - swipePosition}% 0 0)` }}
+        >
+          <MapLibreMap
+            {...viewState}
+            mapLib={maplibregl}
+            mapStyle={leftRasterStyle}
+            attributionControl={false}
+            interactive={false}
+          />
+        </div>
+      ) : null}
+
+      {isSwipeMode && rightRasterTileUrl ? (
+        <div
+          className="map-canvas-overlay map-canvas-overlay-right"
+          style={{ clipPath: `inset(0 0 0 ${swipePosition}%)` }}
+        >
+          <MapLibreMap
+            {...viewState}
+            mapLib={maplibregl}
+            mapStyle={rightRasterStyle}
+            attributionControl={false}
+            interactive={false}
+          />
+        </div>
+      ) : null}
+
+      {isSwipeMode ? (
+        <div className="map-swipe-divider" style={{ left: `${swipePosition}%` }}>
+          <div
+            className="map-swipe-thumb-hitbox"
+            onPointerDown={(event) => {
+              event.currentTarget.setPointerCapture(event.pointerId)
+              updateSwipePosition(
+                event.clientX,
+                containerRef.current,
+                onSwipePositionChange,
+              )
+            }}
+            onPointerMove={(event) => {
+              if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+                return
+              }
+
+              updateSwipePosition(
+                event.clientX,
+                containerRef.current,
+                onSwipePositionChange,
+              )
+            }}
+            onPointerUp={(event) => {
+              event.currentTarget.releasePointerCapture(event.pointerId)
+            }}
+          >
+            <IconButton
+              type="button"
+              className="map-swipe-thumb"
+              aria-label="Adjust swipe comparison"
+              size="2"
+              variant="solid"
+              tabIndex={-1}
+              style={{
+                backgroundColor: '#fff',
+                color: '#111',
+              }}
+            >
+              <ColumnSpacingIcon />
+            </IconButton>
+          </div>
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -56,7 +154,7 @@ function getTileUrl(preferences: AppPreferences): string {
   return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 }
 
-function createRasterStyle(basemapTileUrl: string, rasterTileUrl: string | null) {
+function createMapStyle(basemapTileUrl: string, rasterTileUrl: string | null) {
   return {
     version: 8,
     sources: {
@@ -97,4 +195,50 @@ function createRasterStyle(basemapTileUrl: string, rasterTileUrl: string | null)
         : []),
     ],
   } as maplibregl.StyleSpecification
+}
+
+function createRasterOnlyStyle(rasterTileUrl: string | null, side: 'left' | 'right') {
+  const sourceId = `${side}StacRaster`
+  const layerId = `${side}-stac-raster`
+
+  return {
+    version: 8,
+    sources: rasterTileUrl
+      ? {
+          [sourceId]: {
+            type: 'raster',
+            tiles: [rasterTileUrl],
+            tileSize: 512,
+            attribution: 'Sentinel-2 / TiTiler',
+          },
+        }
+      : {},
+    layers: rasterTileUrl
+      ? [
+          {
+            id: layerId,
+            type: 'raster',
+            source: sourceId,
+            paint: {
+              'raster-opacity': 1,
+            },
+          },
+        ]
+      : [],
+  } as maplibregl.StyleSpecification
+}
+
+function updateSwipePosition(
+  clientX: number,
+  container: HTMLDivElement | null,
+  onSwipePositionChange: (swipePosition: number) => void,
+) {
+  if (!container) {
+    return
+  }
+
+  const bounds = container.getBoundingClientRect()
+  const nextPosition = ((clientX - bounds.left) / bounds.width) * 100
+
+  onSwipePositionChange(Math.min(90, Math.max(10, nextPosition)))
 }
