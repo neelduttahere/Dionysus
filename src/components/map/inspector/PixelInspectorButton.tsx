@@ -82,7 +82,7 @@ export function PixelInspectorButton({
       <Popover.Content
         width="390px"
         className="pixel-inspector-popover"
-        align="end"
+        align="center"
         side="left"
         sideOffset={12}
         onInteractOutside={(event) => event.preventDefault()}
