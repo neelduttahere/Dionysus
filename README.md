@@ -47,6 +47,10 @@ Pages demo is planned, but not enabled yet.
 - Compute TiTiler band expressions and apply alphabetically sorted matplotlib
   colormaps.
 - Compare two scenes or render configurations with swipe mode.
+- Inspect raster histograms for the active render, including configurable
+  histogram bin counts.
+- Auto-switch the Inspector between left and right swipe scenes based on cursor
+  position, while pausing that behavior when the cursor is over the Inspector.
 - Inspect TiTiler tile request health with the map diagnostics panel.
 - Review STAC compatibility guidance for CORS, requester-pays assets, and signed
   asset catalogs.
@@ -167,8 +171,12 @@ VITE_BASE_PATH=/
    - `Single band`
    - `Expression`
 8. Use `Swipe` mode to configure left and right scenes independently.
-9. Open `Tile Diagnostics` from the top-right map control to inspect TiTiler
-   tile requests.
+9. Open `Inspector` from the right-side map controls to review histogram
+   statistics for the active render and adjust histogram bin count.
+10. In `Swipe` mode, move the cursor across the split to let the Inspector
+    follow the left or right scene automatically.
+11. Open `Tile Diagnostics` from the top-right map control to inspect TiTiler
+    tile requests.
 
 ### Tile Diagnostics
 
