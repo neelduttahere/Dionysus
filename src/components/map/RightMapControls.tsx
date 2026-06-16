@@ -16,12 +16,27 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import { Link } from '@tanstack/react-router'
+import {
+  type InspectorTarget,
+  PixelInspectorButton,
+} from '@/components/map/inspector/PixelInspectorButton'
+import type { ComposerMode } from '@/types/composer'
 import type { AppPreferences } from '@/types/preferences'
 import './RightMapControls.css'
+
+interface InspectorState {
+  mode: ComposerMode
+  single: InspectorTarget
+  left: InspectorTarget
+  right: InspectorTarget
+  histogramBins: number
+  onHistogramBinsChange: (histogramBins: number) => void
+}
 
 interface RightMapControlsProps {
   preferences: AppPreferences
   cursor: { longitude: number; latitude: number } | null
+  inspector: InspectorState
   onPreferencesChange: (preferences: AppPreferences) => void
   onZoomIn: () => void
   onZoomOut: () => void
@@ -30,6 +45,7 @@ interface RightMapControlsProps {
 export function RightMapControls({
   preferences,
   cursor,
+  inspector,
   onPreferencesChange,
   onZoomIn,
   onZoomOut,
@@ -37,6 +53,14 @@ export function RightMapControls({
   return (
     <fieldset className="map-tools map-tools-bottom">
       <legend className="sr-only">Map tools</legend>
+      <PixelInspectorButton
+        mode={inspector.mode}
+        single={inspector.single}
+        left={inspector.left}
+        right={inspector.right}
+        histogramBins={inspector.histogramBins}
+        onHistogramBinsChange={inspector.onHistogramBinsChange}
+      />
       <Tooltip content="Zoom in">
         <IconButton
           variant="solid"

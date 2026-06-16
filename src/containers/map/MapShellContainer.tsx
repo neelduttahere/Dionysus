@@ -9,11 +9,15 @@ import { ComposerPanelContainer } from '@/containers/composer/ComposerPanelConta
 import { SettingsPanelContainer } from '@/containers/settings/SettingsPanelContainer'
 import { useStacAssetStatistics } from '@/hooks/api/useStacAssetStatistics'
 import { useStacTileJson } from '@/hooks/api/useStacTileJson'
+import { useInspectorTarget } from '@/hooks/map/useInspectorTarget'
 import { useTileDiagnostics } from '@/hooks/map/useTileDiagnostics'
 import { useAppPreferences } from '@/hooks/preferences/useAppPreferences'
 import type { ComposerInstanceState, ComposerState } from '@/types/composer'
 import type { BBox } from '@/utils/geo/bbox'
-import { getExpressionRenderParams } from '@/utils/titiler/expressions'
+import {
+  getInstanceRenderRequest,
+  type TileRenderRequest,
+} from '@/utils/map/renderRequest'
 import { defaultComposerState } from '@/utils/url/composerSearch'
 import './MapShellContainer.css'
 
@@ -45,6 +49,7 @@ export function MapShellContainer({
     null,
   )
   const [swipePosition, setSwipePosition] = useState(50)
+  const [inspectorHistogramBins, setInspectorHistogramBins] = useState(5)
   const singleRaster = useComposerRaster({
     instance: composerState.single,
     titilerUrl: preferences.titilerUrl,
@@ -58,6 +63,27 @@ export function MapShellContainer({
   const rightRaster = useComposerRaster({
     instance: composerState.right,
     titilerUrl: preferences.titilerUrl,
+    enabled: composerState.mode === 'swipe',
+  })
+  const singleInspector = useInspectorTarget({
+    label: 'Single scene',
+    instance: composerState.single,
+    titilerUrl: preferences.titilerUrl,
+    histogramBins: inspectorHistogramBins,
+    enabled: composerState.mode === 'single',
+  })
+  const leftInspector = useInspectorTarget({
+    label: 'Left scene',
+    instance: composerState.left,
+    titilerUrl: preferences.titilerUrl,
+    histogramBins: inspectorHistogramBins,
+    enabled: composerState.mode === 'swipe',
+  })
+  const rightInspector = useInspectorTarget({
+    label: 'Right scene',
+    instance: composerState.right,
+    titilerUrl: preferences.titilerUrl,
+    histogramBins: inspectorHistogramBins,
     enabled: composerState.mode === 'swipe',
   })
   const isSwipeMode = composerState.mode === 'swipe'
@@ -155,6 +181,14 @@ export function MapShellContainer({
       <RightMapControls
         preferences={preferences}
         cursor={cursor}
+        inspector={{
+          mode: composerState.mode,
+          single: singleInspector,
+          left: leftInspector,
+          right: rightInspector,
+          histogramBins: inspectorHistogramBins,
+          onHistogramBinsChange: setInspectorHistogramBins,
+        }}
         onPreferencesChange={setPreferences}
         onZoomIn={() =>
           setViewState((currentViewState) => {
@@ -238,57 +272,6 @@ function useComposerRaster({
   return {
     tileUrl: canLoadTileJson ? (stacTileJson.data?.tiles[0] ?? null) : null,
     isComputingStatistics: shouldAutoRescale && stacAssetStatistics.isFetching,
-  }
-}
-
-interface TileRenderRequest {
-  kind: 'visual' | 'single-band' | 'expression'
-  assets: string[]
-  expression?: string
-  colormapName?: string
-  assetAsBand?: boolean
-}
-
-function getInstanceRenderRequest(instance: ComposerInstanceState): TileRenderRequest {
-  const activeItemId = instance.activeItemId
-
-  if (!activeItemId) {
-    return getVisualRenderRequest()
-  }
-
-  const config = instance.configs[activeItemId]
-
-  if (config?.mode === 'single-band' && config.assetKeys[0]) {
-    return {
-      kind: 'single-band',
-      assets: [config.assetKeys[0]],
-    }
-  }
-
-  if (config?.mode === 'expression' && config.appliedExpression?.trim()) {
-    const expression = config.appliedExpression.trim()
-    const expressionParams = getExpressionRenderParams(expression)
-
-    if (expressionParams.assets.length === 0) {
-      return getVisualRenderRequest()
-    }
-
-    return {
-      kind: 'expression',
-      assets: expressionParams.assets,
-      expression: expressionParams.expression,
-      colormapName: (config.appliedColormap || config.colormap).toLowerCase(),
-      assetAsBand: true,
-    }
-  }
-
-  return getVisualRenderRequest()
-}
-
-function getVisualRenderRequest(): TileRenderRequest {
-  return {
-    kind: 'visual',
-    assets: ['visual'],
   }
 }
 

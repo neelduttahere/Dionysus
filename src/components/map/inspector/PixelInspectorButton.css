@@ -1,0 +1,26 @@
+.pixel-inspector-popover {
+  width: min(390px, calc(100vw - 32px));
+  min-width: min(390px, calc(100vw - 32px));
+  max-width: min(390px, calc(100vw - 32px));
+}
+
+.pixel-inspector-scroll {
+  width: 100%;
+  max-height: min(360px, calc(100vh - 240px));
+}
+
+.pixel-inspector-content {
+  width: 100%;
+  min-width: 358px;
+}
+
+.pixel-inspector-loading {
+  width: 100%;
+  min-width: 358px;
+  min-height: 180px;
+}
+
+.pixel-inspector-state {
+  width: 100%;
+  min-width: 358px;
+}

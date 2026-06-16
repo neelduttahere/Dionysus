@@ -7,6 +7,7 @@ export function useStacAssetStatistics({
   assets,
   expression,
   assetAsBand,
+  histogramBins,
   enabled = true,
 }: {
   titilerUrl: string
@@ -14,6 +15,7 @@ export function useStacAssetStatistics({
   assets: string[]
   expression?: string
   assetAsBand?: boolean
+  histogramBins?: number
   enabled?: boolean
 }) {
   return useQuery({
@@ -25,6 +27,7 @@ export function useStacAssetStatistics({
       assets,
       expression,
       assetAsBand,
+      histogramBins,
     ],
     queryFn: () =>
       getStacAssetStatistics({
@@ -33,6 +36,7 @@ export function useStacAssetStatistics({
         assets,
         expression,
         assetAsBand,
+        histogramBins,
       }),
     enabled: Boolean(enabled && titilerUrl && stacUrl && assets.length > 0),
     retry: false,

@@ -80,6 +80,7 @@ export interface StatisticsBand {
   max?: number
   percentile_2?: number
   percentile_98?: number
+  histogram?: [number[], number[]]
 }
 
 export interface StatisticsResponse {
@@ -94,12 +95,14 @@ export async function getStacAssetStatistics({
   assets,
   expression,
   assetAsBand,
+  histogramBins,
 }: {
   titilerUrl: string
   stacUrl: string
   assets: string[]
   expression?: string
   assetAsBand?: boolean
+  histogramBins?: number
 }): Promise<StacStatisticsResponse> {
   const client = createTitilerClient(titilerUrl)
   const params = new URLSearchParams()
@@ -116,6 +119,10 @@ export async function getStacAssetStatistics({
 
   if (assetAsBand) {
     params.set('asset_as_band', 'true')
+  }
+
+  if (histogramBins) {
+    params.set('histogram_bins', String(histogramBins))
   }
 
   const endpoint = expression ? '/stac/statistics' : '/stac/asset_statistics'
