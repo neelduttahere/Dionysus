@@ -24,6 +24,7 @@ interface MapCanvasProps {
   onViewStateChange: (viewState: MapViewState) => void
   onViewStateCommit: (viewState: MapViewState) => void
   onCursorMove: (coordinates: { longitude: number; latitude: number }) => void
+  onSwipeHoverSideChange?: (side: 'left' | 'right' | null) => void
 }
 
 export function MapCanvas({
@@ -38,6 +39,7 @@ export function MapCanvas({
   onViewStateChange,
   onViewStateCommit,
   onCursorMove,
+  onSwipeHoverSideChange,
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapStyle = useMemo(
@@ -54,7 +56,11 @@ export function MapCanvas({
   )
 
   return (
-    <div className="map-canvas" ref={containerRef}>
+    <div
+      className="map-canvas"
+      ref={containerRef}
+      onPointerLeave={() => onSwipeHoverSideChange?.(null)}
+    >
       <MapLibreMap
         {...viewState}
         mapLib={maplibregl}
@@ -65,10 +71,27 @@ export function MapCanvas({
           onViewStateCommit(event.viewState)
         }
         onMouseMove={(event) =>
-          onCursorMove({
-            longitude: event.lngLat.lng,
-            latitude: event.lngLat.lat,
-          })
+          {
+            onCursorMove({
+              longitude: event.lngLat.lng,
+              latitude: event.lngLat.lat,
+            })
+
+            if (!isSwipeMode) {
+              onSwipeHoverSideChange?.(null)
+              return
+            }
+
+            const containerWidth = containerRef.current?.clientWidth
+
+            if (!containerWidth) {
+              return
+            }
+
+            const dividerX = (swipePosition / 100) * containerWidth
+
+            onSwipeHoverSideChange?.(event.point.x <= dividerX ? 'left' : 'right')
+          }
         }
         reuseMaps
       />

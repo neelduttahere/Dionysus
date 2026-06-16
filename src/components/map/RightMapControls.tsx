@@ -29,6 +29,7 @@ interface InspectorState {
   single: InspectorTarget
   left: InspectorTarget
   right: InspectorTarget
+  hoveredSide: 'left' | 'right' | null
   histogramBins: number
   onHistogramBinsChange: (histogramBins: number) => void
 }
@@ -58,6 +59,7 @@ export function RightMapControls({
         single={inspector.single}
         left={inspector.left}
         right={inspector.right}
+        hoveredSide={inspector.hoveredSide}
         histogramBins={inspector.histogramBins}
         onHistogramBinsChange={inspector.onHistogramBinsChange}
       />

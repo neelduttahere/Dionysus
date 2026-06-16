@@ -12,7 +12,7 @@ import {
   Text,
   Tooltip,
 } from '@radix-ui/themes'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { StacStatisticsResponse, StatisticsBand } from '@/api/titiler/endpoints'
 import {
   HistogramChart,
@@ -36,6 +36,7 @@ interface PixelInspectorButtonProps {
   single: InspectorTarget
   left: InspectorTarget
   right: InspectorTarget
+  hoveredSide: 'left' | 'right' | null
   histogramBins: number
   onHistogramBinsChange: (histogramBins: number) => void
 }
@@ -48,11 +49,21 @@ export function PixelInspectorButton({
   single,
   left,
   right,
+  hoveredSide,
   histogramBins,
   onHistogramBinsChange,
 }: PixelInspectorButtonProps) {
   const [activeSide, setActiveSide] = useState<'left' | 'right'>('left')
+  const [isPopoverHovered, setIsPopoverHovered] = useState(false)
   const activeTarget = mode === 'swipe' ? (activeSide === 'left' ? left : right) : single
+
+  useEffect(() => {
+    if (mode !== 'swipe' || isPopoverHovered || !hoveredSide) {
+      return
+    }
+
+    setActiveSide(hoveredSide)
+  }, [hoveredSide, isPopoverHovered, mode])
 
   return (
     <Popover.Root>
@@ -75,6 +86,8 @@ export function PixelInspectorButton({
         side="left"
         sideOffset={12}
         onInteractOutside={(event) => event.preventDefault()}
+        onMouseEnter={() => setIsPopoverHovered(true)}
+        onMouseLeave={() => setIsPopoverHovered(false)}
       >
         <Flex direction="column" gap="3">
           <Flex align="start" justify="between" gap="3">

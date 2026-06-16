@@ -49,6 +49,7 @@ export function MapShellContainer({
     null,
   )
   const [swipePosition, setSwipePosition] = useState(50)
+  const [hoveredSwipeSide, setHoveredSwipeSide] = useState<'left' | 'right' | null>(null)
   const [inspectorHistogramBins, setInspectorHistogramBins] = useState(5)
   const singleRaster = useComposerRaster({
     instance: composerState.single,
@@ -150,6 +151,7 @@ export function MapShellContainer({
         onViewStateChange={updateViewState}
         onViewStateCommit={commitViewState}
         onCursorMove={setCursor}
+        onSwipeHoverSideChange={setHoveredSwipeSide}
       />
       <TileDiagnosticsButton
         records={tileDiagnostics.records}
@@ -186,6 +188,7 @@ export function MapShellContainer({
           single: singleInspector,
           left: leftInspector,
           right: rightInspector,
+          hoveredSide: hoveredSwipeSide,
           histogramBins: inspectorHistogramBins,
           onHistogramBinsChange: setInspectorHistogramBins,
         }}
